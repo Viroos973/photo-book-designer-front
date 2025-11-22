@@ -7,6 +7,8 @@ import {ROLES} from "@/utils/constants/roles";
 import {Button} from "@/components/ui/button";
 import {ArrowLeft} from "lucide-react";
 import {ROUTES} from "@/utils/constants/routes";
+import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {PROJECT_TYPES} from "@/utils/constants/projectTypes";
 
 export const Header = () => {
     const { state, functions } = useHeader()
@@ -15,14 +17,29 @@ export const Header = () => {
         <div className={`flex items-center w-full h-[80px] border-b p-8 
         ${state.role === ROLES.USER ? "justify-end" : "justify-between"}`}>
             {state.role !== ROLES.USER && (
-                <div className={`flex items-center`}>
-                    <Button className="cursor-pointer" variant={"ghost"}>
-                        <ArrowLeft />
-                    </Button>
-                    <Button className="cursor-pointer" variant={"ghost"}>
-                        {state.projectName || "Новый проект"}
-                    </Button>
-                </div>
+                <>
+                    <div className={`flex items-center`}>
+                        <Button className="cursor-pointer" variant={"ghost"}>
+                            <ArrowLeft/>
+                        </Button>
+                        <Button className="cursor-pointer" variant={"ghost"}>
+                            {state.projectName || "Новый проект"}
+                        </Button>
+                    </div>
+                    <Tabs defaultValue={state.projectType} onValueChange={(e) => functions.setProjectType(e)}>
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value={PROJECT_TYPES.EDITOR} className="cursor-pointer">
+                                Редактор
+                            </TabsTrigger>
+                            <TabsTrigger value={PROJECT_TYPES.MOVING_PAGES} className="cursor-pointer">
+                                Страницы
+                            </TabsTrigger>
+                            <TabsTrigger value={PROJECT_TYPES.RESULT} className="cursor-pointer">
+                                Результат
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </>
             )}
             <div className={`flex items-center gap-2`}>
                 {state.role !== ROLES.USER && (

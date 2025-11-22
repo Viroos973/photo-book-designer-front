@@ -1,0 +1,5 @@
+export const PROJECT_TYPES = {
+    EDITOR: "EDITOR",
+    MOVING_PAGES: "MOVING_PAGES",
+    RESULT: "RESULT"
+}

@@ -7,7 +7,6 @@ import {ROLES} from "@/utils/constants/roles";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [myRole, setMyRole] = useState(ROLES.USER)
-    const [projectName, setProjectName] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
         const token = getUserToken();
         return !!token;
@@ -37,14 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 authenticated: isAuthenticated,
                 role: myRole,
                 userId: data?.sub || '',
-                projectName: projectName,
-                setProjectName,
                 setMyRole,
                 login,
                 logout
             })
         },
-        [isAuthenticated, myRole, projectName]
+        [isAuthenticated, myRole]
     );
 
     return (<AuthContext.Provider value={value}>{children}</AuthContext.Provider>);
