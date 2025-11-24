@@ -1,4 +1,9 @@
 export const ROUTES = {
     ROOT: '/',
-    PROFILE: 'profile'
+    PROFILE: {
+        ROOT: '/profile'
+    },
+    EDITORS: {
+        $ID: (editorId: string) => `/editors/${editorId}`
+    }
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import {cn} from "@/lib/utils";
 import {useHeader} from "@/app/(components)/Header/hooks/useHeader";
 import {ROLES} from "@/utils/constants/roles";
 import {Button} from "@/components/ui/button";
@@ -19,14 +18,16 @@ export const Header = () => {
             {state.role !== ROLES.USER && (
                 <>
                     <div className={`flex items-center`}>
-                        <Button className="cursor-pointer" variant={"ghost"}>
-                            <ArrowLeft/>
-                        </Button>
+                        <Link href={ROUTES.ROOT}>
+                            <Button className="cursor-pointer" variant={"ghost"}>
+                                <ArrowLeft/>
+                            </Button>
+                        </Link>
                         <Button className="cursor-pointer" variant={"ghost"}>
                             {state.projectName || "Новый проект"}
                         </Button>
                     </div>
-                    <Tabs defaultValue={state.projectType} onValueChange={(e) => functions.setProjectType(e)}>
+                    <Tabs defaultValue={state.initialProjectType} onValueChange={(e) => functions.setProjectType(e)}>
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value={PROJECT_TYPES.EDITOR} className="cursor-pointer">
                                 Редактор
@@ -54,12 +55,7 @@ export const Header = () => {
                 )}
                 {state.authenticated ? (
                     <>
-                        <Link href={ROUTES.PROFILE}
-                              className={cn(
-                                  'text-sm font-medium text-muted-foreground hover:underline',
-                                  functions.isActive(ROUTES.PROFILE) && 'text-primary'
-                              )
-                        }>
+                        <Link href={ROUTES.PROFILE.ROOT}>
                             <Button className="cursor-pointer" variant={"default"}>
                                 {"Профиль"}
                             </Button>

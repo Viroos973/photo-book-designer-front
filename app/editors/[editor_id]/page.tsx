@@ -2,6 +2,7 @@
 
 import {useEditorPhotoBook} from "@/app/editors/[editor_id]/hooks/useEditorPhotoBook";
 import {PROJECT_TYPES} from "@/utils/constants/projectTypes";
+import {EditorPage} from "@/app/editors/[editor_id]/components/EditorPage/EditorPage";
 
 const EditorPhotoBook = () => {
     const { state } = useEditorPhotoBook()
@@ -11,7 +12,7 @@ const EditorPhotoBook = () => {
     ) : state.projectType === PROJECT_TYPES.RESULT ? (
         <p className='text-2xl font-bold'>{"Ресультат"}</p>
     ) : (
-        <p className='text-2xl font-bold'>{"Редактор"}</p>
+        <EditorPage />
     )
 }
 
