@@ -6,14 +6,18 @@ import {ArrowLeft} from 'lucide-react';
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {useAnimatedSidebarDetails} from "./hooks/useAnimatedSidebarDetails";
 import {ComponentProps} from "react";
+import {ShapeType} from "@/utils/shapes/shapeTypes";
 
-type AnimatedSidebarDetailsProps = ComponentProps<'div'>
+interface AnimatedSidebarDetailsProps extends ComponentProps<'div'> {
+    selectedTools: ShapeType,
+    setSelectedTools: (selectedTools: ShapeType) => void
+}
 
-export function AnimatedSidebarDetails({children}: AnimatedSidebarDetailsProps) {
-    const {state, functions} = useAnimatedSidebarDetails()
+export function AnimatedSidebarDetails({selectedTools, setSelectedTools, children}: AnimatedSidebarDetailsProps) {
+    const {state, functions} = useAnimatedSidebarDetails(selectedTools, setSelectedTools)
 
     return (
-        <div className="flex h-screen w-full">
+        <div className="flex h-full w-full">
             <div className="h-full flex flex-col border-r">
                 {state.navigation.map((item) => (
                     <Button
@@ -45,31 +49,14 @@ export function AnimatedSidebarDetails({children}: AnimatedSidebarDetailsProps) 
                             </Button>
                         </div>
                         <ScrollArea className="flex-1 p-4">
-                            <div className="space-y-6">
-                                {state.detailContent[state.activeItem as keyof typeof state.detailContent].sections.map((section, index) => (
-                                    <div key={index} className="space-y-2">
-                                        <h4 className="text-sm font-medium text-muted-foreground">
-                                            {section.title}
-                                        </h4>
-                                        <div className="space-y-1">
-                                            {section.items.map((item, itemIndex) => (
-                                                <Button
-                                                    key={itemIndex}
-                                                    variant="ghost"
-                                                    className="w-full justify-start text-sm"
-                                                >
-                                                    {item}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            {state.detailContent[state.activeItem as keyof typeof state.detailContent].body}
                         </ScrollArea>
                     </div>
                 )}
             </div>
-            {children}
+            <div className="flex-grow">
+                {children}
+            </div>
         </div>
     );
 }

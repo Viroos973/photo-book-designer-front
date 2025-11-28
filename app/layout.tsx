@@ -21,7 +21,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
         <Providers>
             <div className='flex h-screen flex-col'>
                 <Header />
-                <main>
+                <main className="flex-grow">
                     {children}
                 </main>
             </div>
