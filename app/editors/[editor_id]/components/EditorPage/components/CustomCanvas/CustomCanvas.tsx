@@ -14,9 +14,18 @@ export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) 
     const {state, functions} = useCustomCanvas(selectedTools)
 
     return (
-        <Stage width={width} height={height} onClick={functions.handleStageClick} className="border border-black">
+        <Stage
+            width={width}
+            height={height}
+            onMouseDown={functions.handleMouseDown}
+            onMouseMove={functions.handleMouseMove}
+            onMouseUp={functions.handleMouseUp}
+            onMouseLeave={functions.handleMouseUp}
+            className={`border border-black ${state.isDrawing ? 'cursor-crosshair' : ''}`}
+        >
             <Layer>
                 {state.shapes.map(shape => functions.renderShape(shape))}
+                {state.tempShape && functions.renderShape(state.tempShape)}
             </Layer>
         </Stage>
     )

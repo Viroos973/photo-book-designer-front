@@ -26,3 +26,15 @@ export interface Shape {
     isDragging: boolean;
     props: Omit<ShapeProps, 'type'>;
 }
+
+export interface DrawingLogic {
+    createInitialShape: (startPos: { x: number; y: number }) => Shape;
+    updateShapeWhileDrawing: (
+        shape: Shape,
+        startPos: { x: number; y: number },
+        currentPos: { x: number; y: number }
+    ) => Shape;
+    shouldFinalizeShape: (shape: Shape) => boolean;
+}
+
+export const minSizeShape: number = 4

@@ -1,5 +1,5 @@
 import { Shape, ShapeType, ShapeProps } from '@/utils/shapes/shapeTypes';
-import { getShapeProps } from '@/utils/shapes/shapeConfig';
+import {getDrawingLogic, getShapeProps} from '@/utils/shapes/shapeConfig';
 
 export const createShape = (type: ShapeType, x: number, y: number): Shape => ({
     id: `${crypto.randomUUID()}`,
@@ -9,6 +9,26 @@ export const createShape = (type: ShapeType, x: number, y: number): Shape => ({
     isDragging: false,
     props: getShapeProps(type)
 });
+
+export const createInitialDrawingShape = (type: ShapeType, startPos: { x: number; y: number }): Shape => {
+    const drawingLogic = getDrawingLogic(type);
+    return drawingLogic.createInitialShape(startPos);
+};
+
+export const updateShapeWhileDrawing = (
+    type: ShapeType,
+    shape: Shape,
+    startPos: { x: number; y: number },
+    currentPos: { x: number; y: number }
+): Shape => {
+    const drawingLogic = getDrawingLogic(type);
+    return drawingLogic.updateShapeWhileDrawing(shape, startPos, currentPos);
+};
+
+export const shouldFinalizeShape = (type: ShapeType, shape: Shape): boolean => {
+    const drawingLogic = getDrawingLogic(type);
+    return drawingLogic.shouldFinalizeShape(shape);
+};
 
 export const updateShapePosition = (shape: Shape, x: number, y: number): Shape => ({
     ...shape,
