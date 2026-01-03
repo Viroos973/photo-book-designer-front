@@ -12,7 +12,7 @@ export const useContextMenuCanvas = (contextMenuState: ContextMenuProps, clipboa
             };
             setShapes(prev => [...prev, newShape]);
         }
-    }, [clipboardRef, contextMenuState.x, contextMenuState.y, setShapes]);
+    }, [clipboardRef, setShapes, contextMenuState]);
 
     const selectAll = useCallback(() => {
         console.log("Вы выбрали все элементы")
