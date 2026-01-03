@@ -1,5 +1,5 @@
 import {SHAPE_TYPES} from "@/utils/shapes/shapeConfig";
-import {ShapeButton} from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ShapeButton/ShapeButton";
+import {ShapeButton} from "@/app/editors/[editor_id]/components/EditorPage/components/AnimatedSidebarDetails/components/ShapeButton/ShapeButton";
 import {ShapeType} from "@/utils/shapes/shapeTypes";
 
 interface ShapesSectionProps {

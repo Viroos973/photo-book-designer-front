@@ -1,6 +1,15 @@
 import { Circle, Rect, Text, Line, Star, RegularPolygon } from 'react-konva';
 import {ComponentProps} from "react";
 
+export interface ContextMenuProps {
+    visible: boolean;
+    x: number;
+    y: number;
+    canvasX?: number;
+    canvasY?: number;
+    shapeId?: string | null;
+}
+
 export type ShapeType = 'circle' | 'rect' | 'text' | 'line' | 'star' | 'triangle';
 
 export type CircleProps = ComponentProps<typeof Circle>;

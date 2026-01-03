@@ -1,5 +1,5 @@
 import {useRef, useState} from "react";
-import {minSizeShape, Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {ContextMenuProps, minSizeShape, Shape, ShapeType} from "@/utils/shapes/shapeTypes";
 import {
     createInitialDrawingShape,
     createShape, shouldFinalizeShape,
@@ -16,12 +16,31 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
     const [tempShape, setTempShape] = useState<Shape | null>(null);
     const startPos = useRef<Vector2d | null>(null);
     const stageRef = useRef<Konva.Stage | null>(null);
+    const clipboardRef = useRef<Shape | null>(null);
+
+    const [contextMenuState, setContextMenuState] = useState<ContextMenuProps>({
+        visible: false,
+        x: 0,
+        y: 0,
+        shapeId: null
+    })
+    const [contextMenuCanvasState, setContextMenuCanvasState] = useState<ContextMenuProps>({
+        visible: false,
+        x: 0,
+        y: 0,
+        canvasX: 0,
+        canvasY: 0
+    })
 
     const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
         const stage = e.target.getStage();
         if (!stage) return;
 
         stageRef.current = stage;
+
+        if (e.evt.button === 2) {
+            return;
+        }
 
         if (e.target === stage) {
             const point = stage.getPointerPosition();
@@ -109,6 +128,63 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
         );
     };
 
+    const handleOpenContextMenuCanvas = (e: Konva.KonvaEventObject<MouseEvent>) => {
+        e.evt.preventDefault();
+
+        if (e.target !== e.target.getStage()) {
+            return;
+        }
+
+        const stage = e.target.getStage();
+        const pos = stage?.getPointerPosition();
+        const stagePos = stage.getPointerPosition();
+
+        if (pos && stagePos) {
+            setContextMenuCanvasState({
+                visible: true,
+                x: e.evt.clientX,
+                y: e.evt.clientY,
+                canvasX: stagePos.x,
+                canvasY: stagePos.y
+            });
+        }
+    }
+
+    const handleCloseContextMenuCanvas = () => {
+        setContextMenuCanvasState({
+            visible: false,
+            x: 0,
+            y: 0,
+            canvasX: 0,
+            canvasY: 0
+        });
+    }
+
+    const handleOpenContextMenuShape = (e: Konva.KonvaEventObject<MouseEvent>, id: string) => {
+        e.evt.preventDefault();
+
+        const stage = e.target.getStage();
+        const pos = stage?.getPointerPosition();
+
+        if (pos) {
+            setContextMenuState({
+                visible: true,
+                x: e.evt.clientX,
+                y: e.evt.clientY,
+                shapeId: id
+            });
+        }
+    }
+
+    const handleCloseContextMenu = () => {
+        setContextMenuState({
+            visible: false,
+            x: 0,
+            y: 0,
+            shapeId: null
+        });
+    }
+
     const renderShape = (shape: Shape) => {
         const ShapeComponent = getShapeComponent(shape.type);
 
@@ -122,19 +198,20 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return <ShapeComponent {...shapeProps as any} key={shape.id} />;
+        return (<ShapeComponent {...shapeProps as any} key={shape.id} onContextMenu={(e) => handleOpenContextMenuShape(e, shape.id)} />);
     };
-
-    /*const clearCanvas = () => {
-        setShapes([]);
-    };
-
-    const removeLastShape = () => {
-        setShapes(prev => prev.slice(0, -1));
-    };*/
 
     return {
-        state: { shapes, isDrawing, tempShape },
-        functions: { handleMouseDown, handleMouseMove, handleMouseUp, renderShape }
+        state: { shapes, isDrawing, tempShape, clipboardRef, contextMenuState, contextMenuCanvasState },
+        functions: {
+            handleMouseDown,
+            handleMouseMove,
+            handleMouseUp,
+            renderShape,
+            setShapes,
+            handleCloseContextMenu,
+            handleOpenContextMenuCanvas,
+            handleCloseContextMenuCanvas
+        }
     }
 }

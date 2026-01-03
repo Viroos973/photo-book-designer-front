@@ -3,6 +3,10 @@ import {
     useCustomCanvas
 } from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/hooks/useCustomCanvas";
 import {Layer, Stage} from "react-konva";
+import ContextMenuShapes
+    from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuShapes/ContextMenuShapes";
+import ContextMenuCanvas
+    from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuCanvas/ContextMenuCanvas";
 
 interface CustomCanvasProps {
     width: number,
@@ -14,19 +18,26 @@ export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) 
     const {state, functions} = useCustomCanvas(selectedTools)
 
     return (
-        <Stage
-            width={width}
-            height={height}
-            onMouseDown={functions.handleMouseDown}
-            onMouseMove={functions.handleMouseMove}
-            onMouseUp={functions.handleMouseUp}
-            onMouseLeave={functions.handleMouseUp}
-            className={`border border-black ${state.isDrawing ? 'cursor-crosshair' : ''}`}
-        >
-            <Layer>
-                {state.shapes.map(shape => functions.renderShape(shape))}
-                {state.tempShape && functions.renderShape(state.tempShape)}
-            </Layer>
-        </Stage>
+        <>
+            <Stage
+                width={width}
+                height={height}
+                onMouseDown={functions.handleMouseDown}
+                onMouseMove={functions.handleMouseMove}
+                onMouseUp={functions.handleMouseUp}
+                onMouseLeave={functions.handleMouseUp}
+                onContextMenu={functions.handleOpenContextMenuCanvas}
+                className={`border border-black ${state.isDrawing ? 'cursor-crosshair' : ''}`}
+            >
+                <Layer>
+                    {state.shapes.map(shape => functions.renderShape(shape))}
+                    {state.tempShape && functions.renderShape(state.tempShape)}
+                </Layer>
+            </Stage>
+            <ContextMenuCanvas contextMenuState={state.contextMenuCanvasState} clipboardRef={state.clipboardRef}
+                               setShapes={functions.setShapes} onClose={functions.handleCloseContextMenuCanvas} />
+            <ContextMenuShapes contextMenuState={state.contextMenuState} clipboardRef={state.clipboardRef}
+                               shapes={state.shapes} setShapes={functions.setShapes} onClose={functions.handleCloseContextMenu}/>
+        </>
     )
 }
