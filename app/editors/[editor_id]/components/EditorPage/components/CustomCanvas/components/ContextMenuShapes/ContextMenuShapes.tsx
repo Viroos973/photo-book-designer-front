@@ -1,5 +1,5 @@
 import {Dispatch, RefObject, SetStateAction} from "react";
-import {BringToFront, ClipboardCopy, ClipboardPaste, Edit, Scissors, SendToBack, Trash2} from "lucide-react"
+import {BringToFront, ClipboardCopy, Edit, Scissors, SendToBack, Trash2} from "lucide-react"
 import {ContextMenuProps, Shape} from "@/utils/shapes/shapeTypes";
 import {
     useContextMenuShapes
@@ -20,7 +20,7 @@ interface ContextMenuShapesProps {
 }
 
 const ContextMenuShapes = ({ contextMenuState, clipboardRef, shapes, setShapes, onClose }: ContextMenuShapesProps) => {
-    const { state, functions } = useContextMenuShapes(contextMenuState.shapeId, clipboardRef, shapes, setShapes);
+    const { state, functions } = useContextMenuShapes(clipboardRef, shapes, setShapes, contextMenuState.shapeId);
 
     return (
         <DropdownMenu open={contextMenuState.visible} onOpenChange={(open) => !open && onClose()}>

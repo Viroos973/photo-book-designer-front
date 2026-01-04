@@ -8,7 +8,7 @@ import {
 import {Shape} from "@/utils/shapes/shapeTypes";
 import {Dispatch, RefObject, SetStateAction, useCallback, useMemo} from "react";
 
-export const useContextMenuShapes = (shapeId: string | null, clipboardRef: RefObject<Shape | null>, shapes: Shape[], setShapes: Dispatch<SetStateAction<Shape[]>>) => {
+export const useContextMenuShapes = (clipboardRef: RefObject<Shape | null>, shapes: Shape[], setShapes: Dispatch<SetStateAction<Shape[]>>, shapeId?: string | null) => {
     const canBringForward = useMemo(() => {
         if (!shapeId) return;
 
