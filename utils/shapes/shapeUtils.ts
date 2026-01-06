@@ -38,6 +38,8 @@ export const updateShapePosition = (shape: Shape, x: number, y: number): Shape =
 
 export const updateShapeProps = (shape: Shape, newProps: Partial<ShapeProps>): Shape => ({
     ...shape,
+    x: newProps.x || shape.x,
+    y: newProps.y || shape.y,
     props: { ...shape.props, ...newProps }
 });
 

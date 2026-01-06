@@ -1,6 +1,20 @@
 import { Circle, Rect, Text, Line, Star, RegularPolygon } from 'react-konva';
 import {ComponentProps} from "react";
 
+export interface TransferProps {
+    x: number,
+    y: number,
+    rotation: number,
+    scaleX: number,
+    scaleY: number,
+    width: number,
+    height: number,
+    radius: number,
+    outerRadius: number,
+    innerRadius: number,
+    points: number[]
+}
+
 export interface ContextMenuProps {
     visible: boolean;
     x: number;

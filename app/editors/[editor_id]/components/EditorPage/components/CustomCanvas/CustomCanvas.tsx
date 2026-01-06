@@ -2,7 +2,7 @@ import {ShapeType} from "@/utils/shapes/shapeTypes";
 import {
     useCustomCanvas
 } from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/hooks/useCustomCanvas";
-import {Layer, Stage} from "react-konva";
+import {Layer, Stage, Rect, Transformer} from "react-konva";
 import ContextMenuShapes
     from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuShapes/ContextMenuShapes";
 import ContextMenuCanvas
@@ -11,11 +11,14 @@ import ContextMenuCanvas
 interface CustomCanvasProps {
     width: number,
     height: number,
-    selectedTools: ShapeType
+    selectedTools: ShapeType | null
 }
 
 export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) => {
-    const {state, functions} = useCustomCanvas(selectedTools)
+    const {state,
+        selectionRectRef,
+        transformerRef,
+        functions} = useCustomCanvas(selectedTools)
 
     return (
         <>
@@ -32,6 +35,24 @@ export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) 
                 <Layer>
                     {state.shapes.map(shape => functions.renderShape(shape))}
                     {state.tempShape && functions.renderShape(state.tempShape)}
+                    <Rect
+                        ref={selectionRectRef}
+                        fill="rgba(0, 161, 255, 0.2)"
+                        stroke="rgb(0, 161, 255)"
+                        visible={false}
+                    />
+                    <Transformer
+                        ref={transformerRef}
+                        rotateEnabled
+                        resizeEnabled
+                        boundBoxFunc={(oldBox, newBox) => {
+                            if (newBox.width < 5 || newBox.height < 5) {
+                                return oldBox;
+                            }
+                            return newBox;
+                        }}
+                        onTransformEnd={functions.handleTransformEnd}
+                    />
                 </Layer>
             </Stage>
             <ContextMenuCanvas contextMenuState={state.contextMenuCanvasState} clipboardRef={state.clipboardRef}

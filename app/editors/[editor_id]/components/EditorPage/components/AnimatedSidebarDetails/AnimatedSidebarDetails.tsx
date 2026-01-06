@@ -9,8 +9,8 @@ import {ComponentProps} from "react";
 import {ShapeType} from "@/utils/shapes/shapeTypes";
 
 interface AnimatedSidebarDetailsProps extends ComponentProps<'div'> {
-    selectedTools: ShapeType,
-    setSelectedTools: (selectedTools: ShapeType) => void
+    selectedTools: ShapeType | null,
+    setSelectedTools: (selectedTools: ShapeType | null) => void
 }
 
 export function AnimatedSidebarDetails({selectedTools, setSelectedTools, children}: AnimatedSidebarDetailsProps) {

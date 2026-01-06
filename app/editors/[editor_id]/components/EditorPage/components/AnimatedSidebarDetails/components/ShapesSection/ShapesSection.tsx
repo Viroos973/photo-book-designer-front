@@ -3,7 +3,7 @@ import {ShapeButton} from "@/app/editors/[editor_id]/components/EditorPage/compo
 import {ShapeType} from "@/utils/shapes/shapeTypes";
 
 interface ShapesSectionProps {
-    selectedTools: ShapeType,
+    selectedTools: ShapeType | null,
     onClick: (selectedTools: ShapeType) => void
 }
 

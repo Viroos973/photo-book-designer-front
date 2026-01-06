@@ -1,22 +1,30 @@
-import {useRef, useState} from "react";
-import {ContextMenuProps, minSizeShape, Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {useEffect, useRef, useState} from "react";
+import {ContextMenuProps, minSizeShape, Shape, ShapeType, TransferProps} from "@/utils/shapes/shapeTypes";
 import {
     createInitialDrawingShape,
-    createShape, shouldFinalizeShape,
+    createShape,
+    shouldFinalizeShape,
     updateShapePosition,
+    updateShapeProps,
     updateShapeWhileDrawing
 } from "@/utils/shapes/shapeUtils";
 import {getShapeComponent} from "@/utils/shapes/shapeConfig";
 import Konva from 'konva';
 import {Vector2d} from "konva/lib/types";
 
-export const useCustomCanvas = (selectedTool: ShapeType) => {
+export const useCustomCanvas = (selectedTool: ShapeType | null) => {
     const [shapes, setShapes] = useState<Shape[]>([]);
     const [isDrawing, setIsDrawing] = useState(false);
     const [tempShape, setTempShape] = useState<Shape | null>(null);
+    const [selectedShapeIds, setSelectedShapeIds] = useState<string[]>([]);
+    const transformerRef = useRef<Konva.Transformer | null>(null);
     const startPos = useRef<Vector2d | null>(null);
     const stageRef = useRef<Konva.Stage | null>(null);
     const clipboardRef = useRef<Shape | null>(null);
+    const selectionRectRef = useRef<Konva.Rect | null>(null);
+    const selectionStart = useRef<Vector2d | null>(null);
+    const isSelecting = useRef(false);
+
 
     const [contextMenuState, setContextMenuState] = useState<ContextMenuProps>({
         visible: false,
@@ -42,7 +50,25 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
             return;
         }
 
-        if (e.target === stage) {
+        if (!selectedTool && e.target === stage && e.evt.button === 0) {
+            const pos = stage.getPointerPosition();
+            if (!pos || !selectionRectRef.current) return;
+
+            isSelecting.current = true;
+            selectionStart.current = pos;
+
+            selectionRectRef.current.visible(true);
+            selectionRectRef.current.setAttrs({
+                x: pos.x,
+                y: pos.y,
+                width: 0,
+                height: 0
+            });
+
+            return;
+        }
+
+        if (e.target === stage && selectedTool) {
             const point = stage.getPointerPosition();
             if (!point) return;
 
@@ -55,7 +81,25 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
     };
 
     const handleMouseMove = () => {
-        if (!isDrawing || !startPos.current || !tempShape || !stageRef.current) return;
+        if (isSelecting.current && selectionStart.current && stageRef.current && selectionRectRef.current) {
+            const pos = stageRef.current.getPointerPosition();
+            if (!pos) return;
+
+            const sx = selectionStart.current.x;
+            const sy = selectionStart.current.y;
+
+            selectionRectRef.current.setAttrs({
+                x: Math.min(sx, pos.x),
+                y: Math.min(sy, pos.y),
+                width: Math.abs(pos.x - sx),
+                height: Math.abs(pos.y - sy)
+            });
+
+            selectionRectRef.current.getLayer()?.batchDraw();
+            return;
+        }
+
+        if (!isDrawing || !startPos.current || !tempShape || !stageRef.current || !selectedTool) return;
 
         const currentPos = stageRef.current.getPointerPosition();
         if (!currentPos) return;
@@ -76,8 +120,34 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
         }
     };
 
-    const handleMouseUp = () => {
-        if (!isDrawing || !tempShape) return;
+    const handleMouseUp = (e?: Konva.KonvaEventObject<MouseEvent>) => {
+        if (isSelecting.current && selectionRectRef.current && stageRef.current) {
+            const box = selectionRectRef.current.getClientRect();
+            const stage = stageRef.current;
+
+            const ids = new Set<string>();
+
+            stage.find('.selectable').forEach(node => {
+                if (Konva.Util.haveIntersection(box, node.getClientRect())) {
+                    ids.add(node.attrs.id);
+                }
+            });
+
+            setSelectedShapeIds(prev => {
+                if (e?.evt.shiftKey) {
+                    return Array.from(new Set([...prev, ...ids]));
+                }
+                return Array.from(ids);
+            });
+
+            selectionRectRef.current.visible(false);
+            isSelecting.current = false;
+            selectionStart.current = null;
+
+            return;
+        }
+
+        if (!isDrawing || !tempShape || !selectedTool) return;
 
         setIsDrawing(false);
 
@@ -110,7 +180,20 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
         startPos.current = null;
     };
 
-    const handleDragStart = (id: string) => {
+    const handleDragStart = (id: string, e: Konva.KonvaEventObject<DragEvent>) => {
+        e.cancelBubble = true;
+
+        if (!selectedShapeIds.includes(id)) {
+            setSelectedShapeIds(prev => {
+                if (e.evt.shiftKey) {
+                    return prev.includes(id)
+                        ? prev.filter(i => i !== id)
+                        : [...prev, id];
+                }
+                return [id];
+            });
+        }
+
         setShapes(prev =>
             prev.map(shape =>
                 shape.id === id ? { ...shape, isDragging: true } : shape
@@ -185,24 +268,105 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
         });
     }
 
+    const handleClickOnShape = (e: Konva.KonvaEventObject<MouseEvent>, id: string) => {
+        e.cancelBubble = true;
+
+        setSelectedShapeIds(prev => {
+            if (e.evt.shiftKey) {
+                return prev.includes(id)
+                    ? prev.filter(i => i !== id)
+                    : [...prev, id];
+            }
+            return [id];
+        });
+    };
+
     const renderShape = (shape: Shape) => {
         const ShapeComponent = getShapeComponent(shape.type);
 
         const shapeProps = {
+            id: shape.id,
             x: shape.x,
             y: shape.y,
+            name: 'selectable',
             draggable: true,
-            onDragStart: () => handleDragStart(shape.id),
+            onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => handleDragStart(shape.id, e),
             onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(shape.id, e),
             ...shape.props
         };
 
+        if (transformerRef.current) {
+            const nodes = transformerRef.current.nodes();
+
+            nodes.forEach(node => {
+                node.scaleX(1);
+                node.scaleY(1);
+            });
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (<ShapeComponent {...shapeProps as any} key={shape.id} onContextMenu={(e) => handleOpenContextMenuShape(e, shape.id)} />);
+        return (<ShapeComponent {...shapeProps as any} key={shape.id} onClick={(e) => handleClickOnShape(e, shape.id)}
+                                onContextMenu={(e) => handleOpenContextMenuShape(e, shape.id)} />);
     };
 
+    const handleTransformEnd = () => {
+        if (!transformerRef.current) return;
+
+        const nodes = transformerRef.current.nodes();
+
+        setShapes(prevShapes =>
+            prevShapes.map(shape => {
+                const node = nodes.find(n => n.id() === shape.id);
+                if (!node) return shape;
+
+                const scale = [node.attrs.scaleX, node.attrs.scaleY]
+                    .reduce((prev, curr) => Math.abs(curr - 1) > Math.abs(prev - 1) ? curr : prev, 1);
+
+                const newProps: Partial<TransferProps> = {}
+                newProps.x = node.attrs.x
+                newProps.y = node.attrs.y
+                newProps.rotation = node.attrs.rotation
+                if ('width' in node.attrs) {
+                    newProps.width = node.attrs.width * node.attrs.scaleX
+                }
+                if ('height' in node.attrs) {
+                    newProps.height = node.attrs.height * node.attrs.scaleY
+                }
+                if ('radius' in node.attrs) {
+                    newProps.radius = node.attrs.radius * scale
+                }
+                if ('outerRadius' in node.attrs) {
+                    newProps.outerRadius = node.attrs.outerRadius * scale
+                }
+                if ('innerRadius' in node.attrs) {
+                    newProps.innerRadius = node.attrs.innerRadius * scale
+                }
+                if ('points' in node.attrs) {
+                    newProps.points = node.attrs.points
+                }
+
+                return updateShapeProps(shape, newProps);
+            })
+        );
+    };
+
+
+    useEffect(() => {
+        if (!transformerRef.current || !stageRef.current) return;
+
+        const nodes = selectedShapeIds
+            .map(id => stageRef.current?.findOne(`#${id}`))
+            .filter(Boolean) as Konva.Node[];
+
+        transformerRef.current.nodes(nodes);
+        transformerRef.current.getLayer()?.batchDraw();
+    }, [selectedShapeIds]);
+
+
     return {
-        state: { shapes, isDrawing, tempShape, clipboardRef, contextMenuState, contextMenuCanvasState },
+        state: { shapes, isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef },
+        selectionRectRef,
+        transformerRef,
         functions: {
             handleMouseDown,
             handleMouseMove,
@@ -211,7 +375,8 @@ export const useCustomCanvas = (selectedTool: ShapeType) => {
             setShapes,
             handleCloseContextMenu,
             handleOpenContextMenuCanvas,
-            handleCloseContextMenuCanvas
+            handleCloseContextMenuCanvas,
+            handleTransformEnd
         }
     }
 }

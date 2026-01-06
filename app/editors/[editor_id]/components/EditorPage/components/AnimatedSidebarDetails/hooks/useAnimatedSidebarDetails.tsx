@@ -3,7 +3,7 @@ import {Home, Users, Shapes} from "lucide-react";
 import {ShapesSection} from "../components/ShapesSection/ShapesSection";
 import {ShapeType} from "@/utils/shapes/shapeTypes";
 
-export const useAnimatedSidebarDetails = (selectedTools: ShapeType, setSelectedTools: (selectedTools: ShapeType) => void) => {
+export const useAnimatedSidebarDetails = (selectedTools: ShapeType | null, setSelectedTools: (selectedTools: ShapeType | null) => void) => {
     const [activeItem, setActiveItem] = useState<string | null>(null);
 
     const navigation = [
@@ -12,6 +12,14 @@ export const useAnimatedSidebarDetails = (selectedTools: ShapeType, setSelectedT
         { id: 'shapes', icon: Shapes },
     ];
 
+    const handleSelectType = (selectedTool: ShapeType) => {
+        if (selectedTools === selectedTool) {
+            setSelectedTools(null);
+        } else {
+            setSelectedTools(selectedTool);
+        }
+    }
+
     const detailContent = {
         users: {
             title: 'Управление пользователями',
@@ -19,7 +27,7 @@ export const useAnimatedSidebarDetails = (selectedTools: ShapeType, setSelectedT
         },
         shapes: {
             title: 'Объекты шаблона',
-            body: (<ShapesSection selectedTools={selectedTools} onClick={setSelectedTools} />)
+            body: (<ShapesSection selectedTools={selectedTools} onClick={handleSelectType} />)
         }
     };
 
