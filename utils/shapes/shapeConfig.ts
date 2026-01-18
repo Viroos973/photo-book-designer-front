@@ -3,7 +3,7 @@ import {
     DrawingLogic,
     LineProps,
     minSizeShape,
-    RectProps,
+    RectProps, Shape,
     ShapeProps,
     ShapeType,
     StarProps,
@@ -12,6 +12,8 @@ import {
 } from '@/utils/shapes/shapeTypes';
 import {Circle, Minus, Square, Star, Triangle, Type} from 'lucide-react';
 import {Circle as CircleKonva, Line, Rect, RegularPolygon, Star as StarKonva, Text as TextKonva} from 'react-konva';
+import Konva from "konva";
+import {ComponentProps} from "react";
 
 const drawingLogic: Record<ShapeType, DrawingLogic> = {
     rect: {
@@ -230,6 +232,7 @@ const drawingLogic: Record<ShapeType, DrawingLogic> = {
 export const SHAPES_CONFIG = {
     circle: {
         component: CircleKonva,
+        konvaComponent: (props: ComponentProps<typeof CircleKonva>) => new Konva.Circle(props),
         defaultProps: {
             radius: 30,
             fill: "#45B7D1",
@@ -242,6 +245,7 @@ export const SHAPES_CONFIG = {
     },
     rect: {
         component: Rect,
+        konvaComponent: (props: ComponentProps<typeof Rect>) => new Konva.Rect(props),
         defaultProps: {
             width: 80,
             height: 60,
@@ -258,6 +262,7 @@ export const SHAPES_CONFIG = {
     },
     text: {
         component: TextKonva,
+        konvaComponent: (props: ComponentProps<typeof TextKonva>) => new Konva.Text(props),
         defaultProps: {
             text: 'Текст',
             fontSize: 18,
@@ -271,6 +276,7 @@ export const SHAPES_CONFIG = {
     },
     line: {
         component: Line,
+        konvaComponent: (props: ComponentProps<typeof Line>) => new Konva.Line(props),
         defaultProps: {
             points: [-40, -40, 40, 40],
             stroke: "#45B7D1",
@@ -284,6 +290,7 @@ export const SHAPES_CONFIG = {
     },
     star: {
         component: StarKonva,
+        konvaComponent: (props: ComponentProps<typeof StarKonva>) => new Konva.Star(props),
         defaultProps: {
             numPoints: 5,
             innerRadius: 20,
@@ -298,6 +305,7 @@ export const SHAPES_CONFIG = {
     },
     triangle: {
         component: RegularPolygon,
+        konvaComponent: (props: ComponentProps<typeof RegularPolygon>) => new Konva.RegularPolygon(props),
         defaultProps: {
             sides: 3,
             radius: 35,
@@ -320,6 +328,12 @@ export const getShapeProps = (type: ShapeType): Omit<ShapeProps, 'type'> => {
 export const getShapeComponent = (type: ShapeType) => {
     return SHAPES_CONFIG[type].component;
 };
+
+export const getShapeKonvaComponent = (props: Shape) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    return SHAPES_CONFIG[props.type].konvaComponent({...props.props, x: props.x, y: props.y });
+}
 
 export const getDrawingLogic = (type: ShapeType) => {
     return SHAPES_CONFIG[type].drawingLogic;
