@@ -1,79 +1,101 @@
-import {RefObject, useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Shape} from "@/utils/shapes/shapeTypes";
 import Konva from "konva";
-import {getShapeKonvaComponent} from "@/utils/shapes/shapeConfig";
+import {getShapeKonvaComponent, shapeValidationOnMiniPage} from "@/utils/shapes/shapeConfig";
 
-export const useMiniPage = (shapes: Shape[], stageRef: RefObject<Konva.Stage | null>, scale: number, width: number, height: number) => {
+export const useMiniPage = (shapes: Shape[], scale: number, width: number, height: number) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
-
-    const convertToBlobUrl = async (dataUrl: string) => {
-        try {
-            const response = await fetch(dataUrl);
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            setImageUrl(url);
-        } catch (error) {
-            console.error('Failed to convert Data URL to Blob:', error);
-            setImageUrl(dataUrl);
-        }
-    };
+    const [isRendering, setIsRendering] = useState(false);
+    const imageUrlRef = useRef<string | null>(null);
 
     useEffect(() => {
-        const renderToCanvas = async () => {
-            const stage = stageRef.current
-            if (!stage) return
+        imageUrlRef.current = imageUrl;
+    }, [imageUrl]);
 
-            stage.width(width);
-            stage.height(height)
+    useEffect(() => {
+        let isCancelled = false;
 
-            stage.children?.forEach(layer => layer.destroy());
-            stage.removeChildren();
+        const renderThumbnail = async () => {
+            if (isRendering || shapes.length === 0) return;
 
-            const layer = new Konva.Layer();
-            stage.add(layer);
+            setIsRendering(true);
 
-            shapes.forEach(originalShape => {
-                const miniShape = {
-                    ...originalShape,
-                    x: originalShape.x * scale,
-                    y: originalShape.y * scale,
-                    props: {
-                        ...originalShape.props,
-                        scaleX: scale,
-                        scaleY: scale,
-                        strokeWidth: 0
-                    }
-                };
+            try {
+                const tempStage = new Konva.Stage({
+                    container: document.createElement('div'),
+                    width: width,
+                    height: height
+                });
 
-                const node = getShapeKonvaComponent(miniShape);
-                if (node) layer.add(node);
-            });
+                const layer = new Konva.Layer();
+                tempStage.add(layer);
 
-            const background = new Konva.Rect({
-                x: 0,
-                y: 0,
-                width,
-                height,
-                fill: "#FFFFFF",
-                listening: false
-            });
-            layer.add(background);
-            background.moveToBottom();
+                const background = new Konva.Rect({
+                    x: 0,
+                    y: 0,
+                    width,
+                    height,
+                    fill: "#FFFFFF",
+                    listening: false
+                });
+                layer.add(background);
 
-            layer.batchDraw();
+                shapes.forEach(originalShape => {
+                    if (shapeValidationOnMiniPage(originalShape, scale)) return;
 
-            const dataUrl = stage.toDataURL({
-                mimeType: 'image/webp',
-                quality: 0.9
-            });
+                    const miniShape = {
+                        ...originalShape,
+                        x: originalShape.x * scale,
+                        y: originalShape.y * scale,
+                        props: {
+                            ...originalShape.props,
+                            scaleX: scale,
+                            scaleY: scale,
+                            strokeWidth: 0.5
+                        }
+                    };
 
-            stage.destroyChildren();
+                    const node = getShapeKonvaComponent(miniShape);
+                    if (node) layer.add(node);
+                });
 
-            await convertToBlobUrl(dataUrl)
+                background.moveToBottom();
+
+                layer.batchDraw();
+
+                const dataUrl = tempStage.toDataURL({
+                    mimeType: 'image/webp',
+                    quality: 0.9,
+                    pixelRatio: 2
+                });
+
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                if (imageUrlRef.current) URL.revokeObjectURL(imageUrlRef.current);
+                if (!isCancelled) {
+                    setImageUrl(url);
+                } else {
+                    URL.revokeObjectURL(url);
+                }
+
+                tempStage.destroy();
+            } catch (error) {
+                if (!isCancelled) console.error('Ошибка рендеринга миниатюры:', error);
+            } finally {
+                if (!isCancelled) setIsRendering(false);
+            }
         }
 
-        renderToCanvas();
-    }, [height, scale, shapes, stageRef, width])
+        const timeoutId = setTimeout(renderThumbnail, 10);
+
+        return () => {
+            isCancelled = true;
+            clearTimeout(timeoutId);
+            setIsRendering(false);
+        };
+    }, [height, scale, shapes, width])
 
     return {
         state: { imageUrl }

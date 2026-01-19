@@ -1,10 +1,8 @@
-import {useRef, useState} from "react";
+import {useState} from "react";
 import {ShapeType, Shape} from "@/utils/shapes/shapeTypes";
-import Konva from "konva";
 
 export const useEditorPage = () => {
     const [selectedTool, setSelectedTool] = useState<ShapeType | null>(null);
-    const stageRef = useRef<Konva.Stage | null>(null);
     const shapes = [
         {
             id: "648eacf2-5424-4caf-9c6c-41022addc7d7",
@@ -37,7 +35,6 @@ export const useEditorPage = () => {
 
     return {
         state: { selectedTool, shapes },
-        stageRef,
         functions: { setSelectedTool }
     }
 }

@@ -1,19 +1,16 @@
 import {Shape} from "@/utils/shapes/shapeTypes";
-import {RefObject} from "react";
-import Konva from "konva";
 import {useMiniPage} from "@/app/editors/[editor_id]/components/MiniPage/hooks/useMiniPage";
 import Image from "next/image";
 
 interface MiniPageProps {
     shapes: Shape[],
-    stageRef: RefObject<Konva.Stage | null>,
     scale?: number,
     width: number,
     height: number
 }
 
-const MiniPage = ({shapes, stageRef, width, height, scale = 0.02}: MiniPageProps) => {
-    const { state } = useMiniPage(shapes, stageRef, scale, width, height);
+const MiniPage = ({shapes, width, height, scale = 0.02}: MiniPageProps) => {
+    const { state } = useMiniPage(shapes, scale, width, height);
 
     return state.imageUrl ? (
             <Image src={state.imageUrl}

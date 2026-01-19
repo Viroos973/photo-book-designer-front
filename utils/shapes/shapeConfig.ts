@@ -233,6 +233,7 @@ export const SHAPES_CONFIG = {
     circle: {
         component: CircleKonva,
         konvaComponent: (props: ComponentProps<typeof CircleKonva>) => new Konva.Circle(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
         defaultProps: {
             radius: 30,
             fill: "#45B7D1",
@@ -246,6 +247,7 @@ export const SHAPES_CONFIG = {
     rect: {
         component: Rect,
         konvaComponent: (props: ComponentProps<typeof Rect>) => new Konva.Rect(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.width * scale <= 4 && shape.props.height * scale <= 4,
         defaultProps: {
             width: 80,
             height: 60,
@@ -263,6 +265,7 @@ export const SHAPES_CONFIG = {
     text: {
         component: TextKonva,
         konvaComponent: (props: ComponentProps<typeof TextKonva>) => new Konva.Text(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.fontSize * scale <= 2,
         defaultProps: {
             text: 'Текст',
             fontSize: 18,
@@ -277,10 +280,11 @@ export const SHAPES_CONFIG = {
     line: {
         component: Line,
         konvaComponent: (props: ComponentProps<typeof Line>) => new Konva.Line(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.strokeWidth * scale <= 1,
         defaultProps: {
             points: [-40, -40, 40, 40],
             stroke: "#45B7D1",
-            strokeWidth: 2,
+            strokeWidth: 1,
             lineCap: 'round' as const,
             lineJoin: 'round' as const
         } as Omit<LineProps, 'type'>,
@@ -291,6 +295,7 @@ export const SHAPES_CONFIG = {
     star: {
         component: StarKonva,
         konvaComponent: (props: ComponentProps<typeof StarKonva>) => new Konva.Star(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.outerRadius * scale <= 2,
         defaultProps: {
             numPoints: 5,
             innerRadius: 20,
@@ -306,6 +311,7 @@ export const SHAPES_CONFIG = {
     triangle: {
         component: RegularPolygon,
         konvaComponent: (props: ComponentProps<typeof RegularPolygon>) => new Konva.RegularPolygon(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
         defaultProps: {
             sides: 3,
             radius: 35,
@@ -333,6 +339,10 @@ export const getShapeKonvaComponent = (props: Shape) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     return SHAPES_CONFIG[props.type].konvaComponent({...props.props, x: props.x, y: props.y });
+}
+
+export const shapeValidationOnMiniPage = (shape: Shape, scale: number) => {
+    return SHAPES_CONFIG[shape.type].validationOnMiniPage(shape, scale);
 }
 
 export const getDrawingLogic = (type: ShapeType) => {

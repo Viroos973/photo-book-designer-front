@@ -7,6 +7,7 @@ import ContextMenuShapes
     from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuShapes/ContextMenuShapes";
 import ContextMenuCanvas
     from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuCanvas/ContextMenuCanvas";
+import MiniPage from "@/app/editors/[editor_id]/components/MiniPage/MiniPage";
 
 interface CustomCanvasProps {
     width: number,
@@ -55,6 +56,9 @@ export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) 
                     />
                 </Layer>
             </Stage>
+            <div>
+                <MiniPage shapes={state.shapes} width={120} height={140} scale={0.2}/>
+            </div>
             <ContextMenuCanvas contextMenuState={state.contextMenuCanvasState} clipboardRef={state.clipboardRef}
                                setShapes={functions.setShapes} onClose={functions.handleCloseContextMenuCanvas} />
             <ContextMenuShapes contextMenuState={state.contextMenuState} clipboardRef={state.clipboardRef}
