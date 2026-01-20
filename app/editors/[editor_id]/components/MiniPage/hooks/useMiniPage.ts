@@ -7,6 +7,21 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isRendering, setIsRendering] = useState(false);
     const imageUrlRef = useRef<string | null>(null);
+    const containerRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsVisible(true);
+                observer.disconnect();
+            }
+        }, { rootMargin: '50px' });
+
+        if (containerRef.current) observer.observe(containerRef.current);
+
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         imageUrlRef.current = imageUrl;
@@ -16,7 +31,7 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
         let isCancelled = false;
 
         const renderThumbnail = async () => {
-            if (isRendering || shapes.length === 0) return;
+            if (isRendering || shapes.length === 0 || !isVisible) return;
 
             setIsRendering(true);
 
@@ -61,7 +76,7 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
 
                 background.moveToBottom();
 
-                layer.batchDraw();
+                tempStage.batchDraw();
 
                 const dataUrl = tempStage.toDataURL({
                     mimeType: 'image/webp',
@@ -88,7 +103,7 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
             }
         }
 
-        const timeoutId = setTimeout(renderThumbnail, 10);
+        const timeoutId = setTimeout(renderThumbnail, 100);
 
         return () => {
             isCancelled = true;
@@ -98,6 +113,7 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
     }, [height, scale, shapes, width])
 
     return {
-        state: { imageUrl }
+        state: { imageUrl },
+        containerRef
     }
 }
