@@ -1,0 +1,62 @@
+import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {useLoginForm} from "./hooks/useLoginForm";
+
+interface RegisterFormProps {
+    setIsOpen: (isOpen: boolean) => void,
+    setIsRegister: (isRegister: boolean) => void
+}
+
+export const LoginForm = ({ setIsOpen, setIsRegister } : RegisterFormProps) => {
+    const { form, functions } = useLoginForm(setIsOpen)
+
+    return (
+        <Form {...form}>
+            <form onSubmit={functions.onSubmit} className='w-full space-y-4'>
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({field}) => (
+                        <FormItem className="w-full">
+                            <FormControl>
+                                <Input placeholder="Email..." {...field} />
+                            </FormControl>
+                            <FormMessage>
+                                {form.formState?.errors?.email && (
+                                    <p className="text-red-600 text-xs mt-1">
+                                        {form.formState.errors.email.message}
+                                    </p>
+                                )}
+                            </FormMessage>
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({field}) => (
+                        <FormItem className="w-full">
+                            <FormControl>
+                                <Input placeholder="Пароль..." {...field} type="password" />
+                            </FormControl>
+                            <FormMessage>
+                                {form.formState?.errors?.password && (
+                                    <p className="text-red-600 text-xs mt-1">
+                                        {form.formState.errors.password.message}
+                                    </p>
+                                )}
+                            </FormMessage>
+                        </FormItem>
+                    )}
+                />
+                <Button type="button" variant="outline" className='h-10 w-full' onClick={() => setIsRegister(true)}>
+                    {"Регистрация"}
+                </Button>
+                <Button type='submit' className='h-10 w-full'>
+                    {"Войти"}
+                </Button>
+            </form>
+        </Form>
+    )
+}

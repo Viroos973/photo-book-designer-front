@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Home, Users, Shapes} from "lucide-react";
+import {Home, Users, Shapes, Images, BookImage} from "lucide-react";
 import {ShapesSection} from "../components/ShapesSection/ShapesSection";
 import {ShapeType} from "@/utils/shapes/shapeTypes";
 
@@ -7,9 +7,10 @@ export const useAnimatedSidebarDetails = (selectedTools: ShapeType | null, setSe
     const [activeItem, setActiveItem] = useState<string | null>(null);
 
     const navigation = [
-        { id: 'home', icon: Home },
         { id: 'users', icon: Users },
-        { id: 'shapes', icon: Shapes },
+        { id: 'photo', icon: Images },
+        { id: 'background', icon: BookImage},
+        { id: 'shapes', icon: Shapes }
     ];
 
     const handleSelectType = (selectedTool: ShapeType) => {

@@ -11,8 +11,20 @@ export const useHeader = () => {
     const searchParams = useSearchParams();
     const { editor_id } = useParams<{ editor_id: string }>()
     const [projectType, setProjectType] = useState(PROJECT_TYPES.EDITOR);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isRegister, setIsRegister] = useState(false);
     const { authenticated, role, projectName, setMyRole } = useAuth();
     const initialProjectType = searchParams.get('projectType') || PROJECT_TYPES.EDITOR;
+
+    const handleOpenLogin = () => {
+        setIsRegister(false)
+        setIsOpen(true);
+    }
+
+    const handleOpenRegister = () => {
+        setIsRegister(true)
+        setIsOpen(true);
+    }
 
     useEffect(() => {
         if (role === ROLES.USER) return
@@ -36,7 +48,7 @@ export const useHeader = () => {
     }, [pathname]);
 
     return {
-        state: { authenticated, role, projectName, initialProjectType },
-        functions: { setProjectType }
+        state: { authenticated, role, projectName, initialProjectType, isOpen, isRegister },
+        functions: { setProjectType, setIsOpen, setIsRegister, handleOpenLogin, handleOpenRegister }
     }
 }

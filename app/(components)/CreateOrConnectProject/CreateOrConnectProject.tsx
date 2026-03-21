@@ -14,7 +14,7 @@ export const CreateOrConnectProject = ({isOpen, setIsOpen, router, isCreate = fa
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>{isCreate ? "Создать" : "Присоединиться"}</DialogTitle>
+                <DialogTitle>{isCreate ? "Создать проект" : "Присоединиться к проекту"}</DialogTitle>
             </DialogHeader>
             {isCreate ? (
                 <CreateForm setIsOpen={setIsOpen} router={router} />

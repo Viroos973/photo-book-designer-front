@@ -6,7 +6,7 @@ export const useConnectForm = (setIsOpen: (isOpen: boolean) => void) => {
     const connectForm = useForm<ConnectSchema>({
         resolver: zodResolver(connectSchema),
         defaultValues: {
-            login_key: '',
+            inviteCode: '',
         }
     });
 

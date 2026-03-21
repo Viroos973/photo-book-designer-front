@@ -15,16 +15,16 @@ export const ConnectForm = ({setIsOpen}: CreateFormProps) => {
             <form onSubmit={functions.onSubmit} className='w-full space-y-4'>
                 <FormField
                     control={form.control}
-                    name="login_key"
+                    name="inviteCode"
                     render={({field}) => (
                         <FormItem className="w-full">
                             <FormControl>
                                 <Input placeholder="Ключ входа..." {...field} />
                             </FormControl>
                             <FormMessage>
-                                {form.formState?.errors?.login_key && (
+                                {form.formState?.errors?.inviteCode && (
                                     <p className="text-red-600 text-xs mt-1">
-                                        {form.formState.errors.login_key.message}
+                                        {form.formState.errors.inviteCode.message}
                                     </p>
                                 )}
                             </FormMessage>
