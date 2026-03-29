@@ -7,6 +7,6 @@ export const AuthContext = React.createContext({
     projectName: '' as string | null,
     setProjectName: (name: string) => { console.log(name); },
     setMyRole: (role: string) => { console.log(role); },
-    login: (token: string) => { console.log(token) },
+    login: (token: string, refreshToken: string) => { console.log(token, refreshToken) },
     logout: () => {},
 });

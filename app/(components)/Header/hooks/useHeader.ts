@@ -13,6 +13,7 @@ export const useHeader = () => {
     const [projectType, setProjectType] = useState(PROJECT_TYPES.EDITOR);
     const [isOpen, setIsOpen] = useState(false);
     const [isRegister, setIsRegister] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const { authenticated, role, projectName, setMyRole } = useAuth();
     const initialProjectType = searchParams.get('projectType') || PROJECT_TYPES.EDITOR;
 
@@ -47,8 +48,13 @@ export const useHeader = () => {
         setMyRole(ROLES.USER)
     }, [pathname]);
 
+    useEffect(() => {
+        const handleMount = () => setMounted(true);
+        handleMount();
+    }, []);
+
     return {
-        state: { authenticated, role, projectName, initialProjectType, isOpen, isRegister },
+        state: { authenticated, role, projectName, initialProjectType, isOpen, isRegister, mounted },
         functions: { setProjectType, setIsOpen, setIsRegister, handleOpenLogin, handleOpenRegister }
     }
 }

@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {USER_TOKEN} from "@/utils/constants/token";
+import {REFRESH_TOKEN, USER_TOKEN} from "@/utils/constants/token";
 import {getDataJWT} from "@/utils/helpers/getDataJWT";
 import {getUserToken} from "@/utils/helpers/getUserToken";
 import {AuthContext} from "@/shared/contexts";
@@ -13,13 +13,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return !!token;
     });
 
-    const login = (token: string) => {
+    const login = (token: string, refreshToken: string) => {
         localStorage.setItem(USER_TOKEN, token);
+        localStorage.setItem(REFRESH_TOKEN, refreshToken);
         setIsAuthenticated(true);
     };
 
     const logout = () => {
         localStorage.removeItem(USER_TOKEN);
+        localStorage.removeItem(REFRESH_TOKEN)
         setIsAuthenticated(false);
         setMyRole(ROLES.USER)
 

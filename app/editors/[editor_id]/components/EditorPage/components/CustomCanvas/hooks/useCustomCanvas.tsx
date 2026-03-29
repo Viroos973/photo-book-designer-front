@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {ContextMenuProps, minSizeShape, Shape, ShapeType, TransferProps} from "@/utils/shapes/shapeTypes";
 import {
     createInitialDrawingShape,
@@ -12,8 +12,7 @@ import {getShapeComponent} from "@/utils/shapes/shapeConfig";
 import Konva from 'konva';
 import {Vector2d} from "konva/lib/types";
 
-export const useCustomCanvas = (selectedTool: ShapeType | null) => {
-    const [shapes, setShapes] = useState<Shape[]>([]);
+export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React.Dispatch<React.SetStateAction<Shape[]>>) => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [tempShape, setTempShape] = useState<Shape | null>(null);
     const [selectedShapeIds, setSelectedShapeIds] = useState<string[]>([]);
@@ -364,7 +363,7 @@ export const useCustomCanvas = (selectedTool: ShapeType | null) => {
 
 
     return {
-        state: { shapes, isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef },
+        state: { isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef },
         selectionRectRef,
         transformerRef,
         functions: {

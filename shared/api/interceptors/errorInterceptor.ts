@@ -1,7 +1,7 @@
 import type {AxiosError, InternalAxiosRequestConfig} from 'axios';
-import {REFRESH_TOKEN, USER_TOKEN} from "../../constants/token";
+import {REFRESH_TOKEN, USER_TOKEN} from "@/utils/constants/token";
 import {getRefreshToken} from "@/utils/helpers/getUserToken";
-import {instance} from "@/utils/api/instance";
+import {instance} from "@/shared/api/instance";
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;
@@ -27,7 +27,7 @@ export const errorInterceptor = async (error: AxiosError) => {
     }
 
     try {
-        const response = await instance.post(`/auth/refresh`, {
+        const response = await instance.post(`auth/refresh`, {
             refreshToken: refresh
         });
 

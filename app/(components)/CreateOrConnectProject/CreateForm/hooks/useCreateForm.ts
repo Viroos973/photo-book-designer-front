@@ -5,8 +5,12 @@ import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-
 import {ROUTES} from "@/utils/constants/routes";
 import {useState} from "react";
 import {cmToPx} from "@/utils/helpers/cmAndPx";
+import {toast} from "sonner";
+import {usePostCreateRoomMutation} from "@/shared/api/hooks/usePostCreateRoomMutation";
 
 export const useCreateForm = (setIsOpen: (isOpen: boolean) => void, router: AppRouterInstance) => {
+    const createRoom = usePostCreateRoomMutation()
+
     const [isCustomDimensions, setIsCustomDimensions] = useState(false);
     const createForm = useForm<CreateSchema>({
         resolver: zodResolver(createSchema),
@@ -31,15 +35,29 @@ export const useCreateForm = (setIsOpen: (isOpen: boolean) => void, router: AppR
     }
 
     const onSubmit = createForm.handleSubmit(async (values) => {
-        const body = {
-            name: values.name,
-            pagesNum: Number(values.pagesNum),
-            widthTemplate: cmToPx(Number(values.widthTemplate)),
-            heightTemplate: cmToPx(Number(values.heightTemplate)),
+        try {
+            const body = {
+                name: values.name,
+                pagesNum: Number(values.pagesNum),
+                widthTemplate: cmToPx(Number(values.widthTemplate)),
+                heightTemplate: cmToPx(Number(values.heightTemplate)),
+            }
+
+            const room = await createRoom.mutateAsync({
+                params: {
+                    name: body.name,
+                    pagesNum: body.pagesNum,
+                    widthTemplate: body.widthTemplate,
+                    heightTemplate: body.heightTemplate
+                }
+            })
+
+            createForm.reset()
+            setIsOpen(false)
+            router.push(ROUTES.EDITORS.$ID(room.data.id));
+        } catch {
+            toast.error(`Что-то пошло не так`);
         }
-        console.log(body)
-        setIsOpen(false);
-        router.push(ROUTES.EDITORS.$ID(crypto.randomUUID()));
     })
 
     return {

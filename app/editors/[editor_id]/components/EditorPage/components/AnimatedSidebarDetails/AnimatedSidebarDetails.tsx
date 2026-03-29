@@ -6,14 +6,19 @@ import {ArrowLeft} from 'lucide-react';
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {useAnimatedSidebarDetails} from "./hooks/useAnimatedSidebarDetails";
 import {ComponentProps} from "react";
-import {ShapeType} from "@/utils/shapes/shapeTypes";
+import {Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {Thumbnails} from "@/app/editors/[editor_id]/components/EditorPage/components/Thumbnails/Thumbnails";
 
 interface AnimatedSidebarDetailsProps extends ComponentProps<'div'> {
     selectedTools: ShapeType | null,
-    setSelectedTools: (selectedTools: ShapeType | null) => void
+    setSelectedTools: (selectedTools: ShapeType | null) => void,
+    width: number,
+    height: number,
+    pagesNum: number,
+    shapes: Shape[]
 }
 
-export function AnimatedSidebarDetails({selectedTools, setSelectedTools, children}: AnimatedSidebarDetailsProps) {
+export function AnimatedSidebarDetails({selectedTools, setSelectedTools, width, height, pagesNum, shapes, children}: AnimatedSidebarDetailsProps) {
     const {state, functions} = useAnimatedSidebarDetails(selectedTools, setSelectedTools)
 
     return (
@@ -54,9 +59,12 @@ export function AnimatedSidebarDetails({selectedTools, setSelectedTools, childre
                     </div>
                 )}
             </div>
-            <div className="flex-grow">
-                {children}
+            <div className="flex-grow bg-gray-50 overflow-auto" style={{ height: 'calc(100vh - 80px)' }}>
+                <div className="flex justify-center items-center p-4">
+                    {children}
+                </div>
             </div>
+            <Thumbnails width={width * 0.2} height={height * 0.2} pagesNum={pagesNum} shapes={shapes}/>
         </div>
     );
 }

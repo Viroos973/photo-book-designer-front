@@ -3,7 +3,7 @@ import {Shape} from "@/utils/shapes/shapeTypes";
 import Konva from "konva";
 import {getShapeKonvaComponent, shapeValidationOnMiniPage} from "@/utils/shapes/shapeConfig";
 
-export const useMiniPage = (shapes: Shape[], scale: number, width: number, height: number) => {
+export const useMiniPage = (shapes: Shape[], scale: number, width: number, height: number, isActive: boolean) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isRendering, setIsRendering] = useState(false);
     const imageUrlRef = useRef<string | null>(null);
@@ -28,10 +28,12 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
     }, [imageUrl]);
 
     useEffect(() => {
+        if (!isActive && imageUrl) return
+
         let isCancelled = false;
 
         const renderThumbnail = async () => {
-            if (isRendering || shapes.length === 0 || !isVisible) return;
+            if (isRendering || !isVisible) return;
 
             setIsRendering(true);
 
@@ -110,7 +112,7 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
             clearTimeout(timeoutId);
             setIsRendering(false);
         };
-    }, [height, scale, shapes, width])
+    }, [height, scale, shapes, width, isVisible])
 
     return {
         state: { imageUrl },

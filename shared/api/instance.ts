@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-import { errorInterceptor } from './interceptors/errorInterceptor';
-import { tokenInterceptor } from './interceptors/tokenInterceptor';
+import { errorInterceptor } from '@/shared/api/interceptors/errorInterceptor';
+import { tokenInterceptor } from '@/shared/api/interceptors/tokenInterceptor';
 
 export const instance = axios.create({
-    baseURL: `https://localhost:5192/api/`,
+    baseURL: `http://localhost:5192/api/`,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'

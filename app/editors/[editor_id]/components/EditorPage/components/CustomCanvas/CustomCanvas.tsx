@@ -1,40 +1,38 @@
-import {ShapeType} from "@/utils/shapes/shapeTypes";
-import {
-    useCustomCanvas
-} from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/hooks/useCustomCanvas";
+import {Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {useCustomCanvas} from "./hooks/useCustomCanvas";
 import {Layer, Stage, Rect, Transformer} from "react-konva";
-import ContextMenuShapes
-    from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuShapes/ContextMenuShapes";
-import ContextMenuCanvas
-    from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuCanvas/ContextMenuCanvas";
-import MiniPage from "@/app/editors/[editor_id]/components/MiniPage/MiniPage";
+import ContextMenuShapes from "./components/ContextMenuShapes/ContextMenuShapes";
+import ContextMenuCanvas from "./components/ContextMenuCanvas/ContextMenuCanvas";
+import React from "react";
 
 interface CustomCanvasProps {
     width: number,
     height: number,
-    selectedTools: ShapeType | null
+    selectedTools: ShapeType | null,
+    shapes: Shape[],
+    setShapes: React.Dispatch<React.SetStateAction<Shape[]>>
 }
 
-export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) => {
+export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes}: CustomCanvasProps) => {
     const {state,
         selectionRectRef,
         transformerRef,
-        functions} = useCustomCanvas(selectedTools)
+        functions} = useCustomCanvas(selectedTools, setShapes)
 
     return (
         <>
             <Stage
-                width={width}
-                height={height}
+                width={width * 0.2}
+                height={height * 0.2}
                 onMouseDown={functions.handleMouseDown}
                 onMouseMove={functions.handleMouseMove}
                 onMouseUp={functions.handleMouseUp}
                 onMouseLeave={functions.handleMouseUp}
                 onContextMenu={functions.handleOpenContextMenuCanvas}
-                className={`border border-black ${state.isDrawing ? 'cursor-crosshair' : ''}`}
+                className={`border border-gray-400 bg-white ${state.isDrawing ? 'cursor-crosshair' : ''}`}
             >
                 <Layer>
-                    {state.shapes.map(shape => functions.renderShape(shape))}
+                    {shapes.map(shape => functions.renderShape(shape))}
                     {state.tempShape && functions.renderShape(state.tempShape)}
                     <Rect
                         ref={selectionRectRef}
@@ -56,13 +54,10 @@ export const CustomCanvas = ({width, height, selectedTools}: CustomCanvasProps) 
                     />
                 </Layer>
             </Stage>
-            <div>
-                <MiniPage shapes={state.shapes} width={120} height={140} scale={0.2}/>
-            </div>
             <ContextMenuCanvas contextMenuState={state.contextMenuCanvasState} clipboardRef={state.clipboardRef}
                                setShapes={functions.setShapes} onClose={functions.handleCloseContextMenuCanvas} />
             <ContextMenuShapes contextMenuState={state.contextMenuState} clipboardRef={state.clipboardRef}
-                               shapes={state.shapes} setShapes={functions.setShapes} onClose={functions.handleCloseContextMenu}/>
+                               shapes={shapes} setShapes={functions.setShapes} onClose={functions.handleCloseContextMenu}/>
         </>
     )
 }

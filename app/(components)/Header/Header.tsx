@@ -13,6 +13,18 @@ import {HeaderModal} from "./components/HeaderModal/HeaderModal";
 export const Header = () => {
     const { state, functions } = useHeader()
 
+    if (!state.mounted) {
+        return (
+            <div className="flex items-center w-full h-[80px] border-b p-8 justify-between">
+                <p className='text-2xl font-bold'>{"PBD"}</p>
+                <div className="flex items-center gap-2">
+                    <div className="w-24 h-10 bg-gray-200 rounded animate-pulse" />
+                    <div className="w-20 h-10 bg-gray-200 rounded animate-pulse" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={`flex items-center w-full h-[80px] border-b p-8 justify-between`}>
             {state.role !== ROLES.USER ? (

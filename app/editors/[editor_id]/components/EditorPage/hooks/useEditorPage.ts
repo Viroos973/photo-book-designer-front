@@ -1,40 +1,27 @@
-import {useState} from "react";
-import {ShapeType, Shape} from "@/utils/shapes/shapeTypes";
+import {useEffect, useState} from "react";
+import {Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {useParams} from "next/navigation";
+import {useGetRoomByIdQuery} from "@/shared/api/hooks";
+import {useAuth} from "@/shared/contexts";
 
 export const useEditorPage = () => {
+    const { editor_id } = useParams<{ editor_id: string }>();
+    const {setProjectName} = useAuth();
     const [selectedTool, setSelectedTool] = useState<ShapeType | null>(null);
-    const shapes = [
-        {
-            id: "648eacf2-5424-4caf-9c6c-41022addc7d7",
-            isDragging: false,
-            props: {
-                fill: "#45B7D1",
-                radius: 30,
-                stroke: "black",
-                strokeWidth: 2
-            },
-            type: "circle",
-            x: 255,
-            y: 219
-        },
-        {
-            id: "1313a1ec-5b02-48ea-9049-597c85045ae2",
-            isDragging: false,
-            props: {
-                fill: "#45B7D1",
-                opacity: 1,
-                radius: 145.85352241204188,
-                stroke: "black",
-                strokeWidth: 2
-            },
-            type: "circle",
-            x: 263.5,
-            y: 448
+    const [shapes, setShapes] = useState<Shape[]>([]);
+
+    const getRoomById = useGetRoomByIdQuery({
+        roomId: editor_id
+    })
+
+    useEffect(() => {
+        if (getRoomById.isSuccess && getRoomById.data?.data.name) {
+            setProjectName(getRoomById.data.data.name);
         }
-    ] as Shape[];
+    }, [getRoomById.isSuccess, getRoomById.data, setProjectName]);
 
     return {
-        state: { selectedTool, shapes },
-        functions: { setSelectedTool }
+        state: { selectedTool, getRoomById, shapes },
+        functions: { setSelectedTool, setShapes }
     }
 }
