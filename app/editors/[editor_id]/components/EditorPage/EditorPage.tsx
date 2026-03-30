@@ -11,10 +11,12 @@ export function EditorPage() {
         <AnimatedSidebarDetails selectedTools={state.selectedTool} setSelectedTools={functions.setSelectedTool}
                                 width={state.getRoomById.data?.data.widthTemplate || 3000}
                                 height={state.getRoomById.data?.data.heightTemplate || 3500}
-                                pagesNum={state.getRoomById.data?.data.pagesNum || 10} shapes={state.shapes}>
+                                pagesNum={state.getRoomById.data?.data.pagesNum || 10} shapes={state.shapes}
+                                roomId={state.editor_id}>
             <CustomCanvas width={state.getRoomById.data?.data.widthTemplate || 3000}
                           height={state.getRoomById.data?.data.heightTemplate || 3500}
-                          selectedTools={state.selectedTool} shapes={state.shapes} setShapes={functions.setShapes} />
+                          setSelectedTools={functions.setSelectedTool} selectedTools={state.selectedTool}
+                          shapes={state.shapes} setShapes={functions.setShapes} />
         </AnimatedSidebarDetails>
     );
 }

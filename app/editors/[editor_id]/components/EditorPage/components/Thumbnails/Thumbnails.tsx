@@ -7,18 +7,19 @@ interface ThumbnailsProps {
     width: number,
     height: number,
     pagesNum: number,
-    shapes: Shape[]
+    shapes: Shape[],
+    roomId: string
 }
 
-export const Thumbnails = ({width, height, pagesNum, shapes, scale = 0.3}: ThumbnailsProps) => {
-    const { state, functions } = useThumbnails(width, height, scale, pagesNum);
+export const Thumbnails = ({width, height, pagesNum, shapes, roomId, scale = 0.3}: ThumbnailsProps) => {
+    const { state, functions } = useThumbnails(width, height, scale, pagesNum, roomId);
 
     return (
         <div className="flex flex-col border-l p-6 gap-4 overflow-y-auto" style={{ height: 'calc(100vh - 80px)' }}>
             {state.pages.map((pageNumber) => (
                 <MiniPage key={pageNumber} width={state.miniWidth} height={state.miniHeight} scale={scale}
                           pageNumber={pageNumber} isActive={state.currentPage == pageNumber}
-                          becomeActive={() => functions.setCurrentPage(pageNumber)}
+                          becomeActive={() => functions.setPage(pageNumber)}
                           shapes={state.currentPage == pageNumber ? shapes : functions.getShapesForPage(pageNumber)} />
             ))}
         </div>

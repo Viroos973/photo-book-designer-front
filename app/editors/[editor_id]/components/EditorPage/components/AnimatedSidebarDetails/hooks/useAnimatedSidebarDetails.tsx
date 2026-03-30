@@ -1,19 +1,21 @@
 import {useState} from "react";
-import {Home, Users, Shapes, Images, BookImage} from "lucide-react";
+import {Users, Shapes, Images, BookImage, LayoutTemplate, Type} from "lucide-react";
 import {ShapesSection} from "../components/ShapesSection/ShapesSection";
-import {ShapeType} from "@/utils/shapes/shapeTypes";
+import {PhotoSection} from "../components/PhotoSection/PhotoSection";
 
-export const useAnimatedSidebarDetails = (selectedTools: ShapeType | null, setSelectedTools: (selectedTools: ShapeType | null) => void) => {
-    const [activeItem, setActiveItem] = useState<string | null>(null);
+export const useAnimatedSidebarDetails = (selectedTools: string | null, setSelectedTools: (selectedTools: string | null) => void, roomId: string) => {
+    const [activeItem, setActiveItem] = useState<string | null>('shapes');
 
     const navigation = [
         { id: 'users', icon: Users },
+        { id: 'templates', icon: LayoutTemplate},
         { id: 'photo', icon: Images },
         { id: 'background', icon: BookImage},
-        { id: 'shapes', icon: Shapes }
+        { id: 'shapes', icon: Shapes },
+        { id: 'text', icon: Type}
     ];
 
-    const handleSelectType = (selectedTool: ShapeType) => {
+    const handleSelectType = (selectedTool: string) => {
         if (selectedTools === selectedTool) {
             setSelectedTools(null);
         } else {
@@ -29,6 +31,10 @@ export const useAnimatedSidebarDetails = (selectedTools: ShapeType | null, setSe
         shapes: {
             title: 'Объекты шаблона',
             body: (<ShapesSection selectedTools={selectedTools} onClick={handleSelectType} />)
+        },
+        photo: {
+            title: 'Фотографии',
+            body: (<PhotoSection roomId={roomId} />)
         }
     };
 

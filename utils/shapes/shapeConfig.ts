@@ -7,31 +7,53 @@ import {
     ShapeProps,
     ShapeType,
     StarProps,
-    TextProps,
     TriangleProps
 } from '@/utils/shapes/shapeTypes';
-import {Circle, Minus, Square, Star, Triangle, Type} from 'lucide-react';
-import {Circle as CircleKonva, Line, Rect, RegularPolygon, Star as StarKonva, Text as TextKonva} from 'react-konva';
+import {Circle, Minus, Square, Star, Triangle, Pentagon} from 'lucide-react';
+import {Circle as CircleKonva, Line, Rect, RegularPolygon, Star as StarKonva} from 'react-konva';
 import Konva from "konva";
 import {ComponentProps} from "react";
 
+export const generateShapeProps = (
+    baseProps: Omit<ShapeProps, 'type'>,
+    isImageShape: boolean = false
+): Omit<ShapeProps, 'type'> => {
+    if (isImageShape) {
+        return {
+            ...baseProps,
+            fill: null,
+            fillPatternImage: null,
+            dash: [5, 5],
+            fillPatternRepeat: 'no-repeat',
+            fillPatternScaleX: 1,
+            fillPatternScaleY: 1,
+            fillPatternOffsetX: 0,
+            fillPatternOffsetY: 0,
+        };
+    }
+
+    return {
+        ...baseProps,
+        fill: "#45B7D1",
+    };
+};
+
 const drawingLogic: Record<ShapeType, DrawingLogic> = {
     rect: {
-        createInitialShape: (startPos) => ({
+        createInitialShape: (startPos, isImageShape = false) => ({
             id: `${crypto.randomUUID()}`,
             type: 'rect',
             x: startPos.x,
             y: startPos.y,
             isDragging: false,
-            props: {
+            props: generateShapeProps({
                 width: 0,
                 height: 0,
-                fill: "#45B7D1",
                 cornerRadius: 1,
                 stroke: "black",
                 strokeWidth: 2,
                 opacity: 0.5
-            }
+            }, isImageShape)
         }),
         updateShapeWhileDrawing: (shape, startPos, currentPos) => {
             const dx = currentPos.x - startPos.x;
@@ -55,19 +77,18 @@ const drawingLogic: Record<ShapeType, DrawingLogic> = {
     },
 
     circle: {
-        createInitialShape: (startPos) => ({
+        createInitialShape: (startPos, isImageShape = false) => ({
             id: `${crypto.randomUUID()}`,
             type: 'circle',
             x: startPos.x,
             y: startPos.y,
             isDragging: false,
-            props: {
+            props: generateShapeProps({
                 radius: 0,
-                fill: "#45B7D1",
                 stroke: "black",
                 strokeWidth: 2,
                 opacity: 0.5
-            }
+            }, isImageShape)
         }),
         updateShapeWhileDrawing: (shape, startPos, currentPos) => {
             const dx = currentPos.x - startPos.x;
@@ -132,21 +153,20 @@ const drawingLogic: Record<ShapeType, DrawingLogic> = {
     },
 
     star: {
-        createInitialShape: (startPos) => ({
+        createInitialShape: (startPos, isImageShape = false) => ({
             id: `${crypto.randomUUID()}`,
             type: 'star',
             x: startPos.x,
             y: startPos.y,
             isDragging: false,
-            props: {
+            props: generateShapeProps({
                 numPoints: 5,
                 innerRadius: 0,
                 outerRadius: 0,
-                fill: "#45B7D1",
                 stroke: "black",
                 strokeWidth: 2,
                 opacity: 0.5
-            }
+            }, isImageShape)
         }),
         updateShapeWhileDrawing: (shape, startPos, currentPos) => {
             const dx = currentPos.x - startPos.x;
@@ -172,20 +192,19 @@ const drawingLogic: Record<ShapeType, DrawingLogic> = {
     },
 
     triangle: {
-        createInitialShape: (startPos) => ({
+        createInitialShape: (startPos, isImageShape = false) => ({
             id: `${crypto.randomUUID()}`,
             type: 'triangle',
             x: startPos.x,
             y: startPos.y,
             isDragging: false,
-            props: {
+            props: generateShapeProps({
                 sides: 3,
                 radius: 0,
-                fill: "#45B7D1",
                 stroke: "black",
                 strokeWidth: 2,
                 opacity: 0.5
-            }
+            }, isImageShape)
         }),
         updateShapeWhileDrawing: (shape, startPos, currentPos) => {
             const dx = currentPos.x - startPos.x;
@@ -208,24 +227,40 @@ const drawingLogic: Record<ShapeType, DrawingLogic> = {
         }
     },
 
-    text: {
-        createInitialShape: (startPos) => ({
+    pentagon: {
+        createInitialShape: (startPos, isImageShape = false) => ({
             id: `${crypto.randomUUID()}`,
-            type: 'text',
+            type: 'pentagon',
             x: startPos.x,
             y: startPos.y,
             isDragging: false,
-            props: {
-                text: 'Текст',
-                fontSize: 18,
-                fill: '#333',
-                fontFamily: 'Arial, sans-serif',
-                padding: 10,
+            props: generateShapeProps({
+                sides: 5,
+                radius: 0,
+                stroke: "black",
+                strokeWidth: 2,
                 opacity: 0.5
-            }
+            }, isImageShape)
         }),
-        updateShapeWhileDrawing: (shape) => shape,
-        shouldFinalizeShape: () => true
+        updateShapeWhileDrawing: (shape, startPos, currentPos) => {
+            const dx = currentPos.x - startPos.x;
+            const dy = currentPos.y - startPos.y;
+            const radius = Math.max(Math.abs(dx/2), Math.abs(dy/2));
+
+            return {
+                ...shape,
+                x: startPos.x + dx / 2,
+                y: startPos.y + dy / 2,
+                props: {
+                    ...shape.props,
+                    radius
+                }
+            };
+        },
+        shouldFinalizeShape: (shape) => {
+            const props = shape.props as TriangleProps;
+            return (props.radius || 0) > minSizeShape;
+        }
     }
 };
 
@@ -234,9 +269,11 @@ export const SHAPES_CONFIG = {
         component: CircleKonva,
         konvaComponent: (props: ComponentProps<typeof CircleKonva>) => new Konva.Circle(props),
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
+        getWidth: (shape: Shape) => shape.props.radius * 2,
+        getHeight: (shape: Shape) => shape.props.radius * 2,
+        isImage: true,
         defaultProps: {
             radius: 30,
-            fill: "#45B7D1",
             stroke: "black",
             strokeWidth: 2
         } as Omit<CircleProps, 'type'>,
@@ -248,10 +285,12 @@ export const SHAPES_CONFIG = {
         component: Rect,
         konvaComponent: (props: ComponentProps<typeof Rect>) => new Konva.Rect(props),
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.width * scale <= 4 && shape.props.height * scale <= 4,
+        getWidth: (shape: Shape) => shape.props.width,
+        getHeight: (shape: Shape) => shape.props.height,
+        isImage: true,
         defaultProps: {
             width: 80,
             height: 60,
-            fill: "#45B7D1",
             cornerRadius: 1,
             stroke: "black",
             strokeWidth: 2,
@@ -262,29 +301,17 @@ export const SHAPES_CONFIG = {
         icon: Square,
         drawingLogic: drawingLogic.rect
     },
-    text: {
-        component: TextKonva,
-        konvaComponent: (props: ComponentProps<typeof TextKonva>) => new Konva.Text(props),
-        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.fontSize * scale <= 2,
-        defaultProps: {
-            text: 'Текст',
-            fontSize: 18,
-            fill: '#333',
-            fontFamily: 'Arial, sans-serif',
-            padding: 10
-        } as Omit<TextProps, 'type'>,
-        displayName: 'Текст' as const,
-        icon: Type,
-        drawingLogic: drawingLogic.text
-    },
     line: {
         component: Line,
         konvaComponent: (props: ComponentProps<typeof Line>) => new Konva.Line(props),
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.strokeWidth * scale <= 1,
+        getWidth: (shape: Shape) => Math.abs(shape.props.points[0].x - shape.props.points[1].x),
+        getHeight: (shape: Shape) => Math.abs(shape.props.points[0].y - shape.props.points[1].y),
+        isImage: false,
         defaultProps: {
             points: [-40, -40, 40, 40],
             stroke: "#45B7D1",
-            strokeWidth: 1,
+            strokeWidth: 2,
             lineCap: 'round' as const,
             lineJoin: 'round' as const
         } as Omit<LineProps, 'type'>,
@@ -296,11 +323,13 @@ export const SHAPES_CONFIG = {
         component: StarKonva,
         konvaComponent: (props: ComponentProps<typeof StarKonva>) => new Konva.Star(props),
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.outerRadius * scale <= 2,
+        getWidth: (shape: Shape) => shape.props.outerRadius * 2,
+        getHeight: (shape: Shape) => shape.props.outerRadius * 2,
+        isImage: true,
         defaultProps: {
             numPoints: 5,
             innerRadius: 20,
             outerRadius: 35,
-            fill: "#45B7D1",
             stroke: "black",
             strokeWidth: 2
         } as Omit<StarProps, 'type'>,
@@ -312,20 +341,42 @@ export const SHAPES_CONFIG = {
         component: RegularPolygon,
         konvaComponent: (props: ComponentProps<typeof RegularPolygon>) => new Konva.RegularPolygon(props),
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
+        getWidth: (shape: Shape) => shape.props.radius * 2,
+        getHeight: (shape: Shape) => shape.props.radius * 2,
+        isImage: true,
         defaultProps: {
             sides: 3,
             radius: 35,
-            fill: "#45B7D1",
             stroke: "black",
             strokeWidth: 2
         } as Omit<TriangleProps, 'type'>,
         displayName: 'Треугольник' as const,
         icon: Triangle,
         drawingLogic: drawingLogic.triangle
+    },
+    pentagon: {
+        component: RegularPolygon,
+        konvaComponent: (props: ComponentProps<typeof RegularPolygon>) => new Konva.RegularPolygon(props),
+        validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
+        getWidth: (shape: Shape) => shape.props.radius * 2,
+        getHeight: (shape: Shape) => shape.props.radius * 2,
+        isImage: true,
+        defaultProps: {
+            sides: 5,
+            radius: 35,
+            stroke: "black",
+            strokeWidth: 2
+        } as Omit<TriangleProps, 'type'>,
+        displayName: 'Пятиугольник' as const,
+        icon: Pentagon,
+        drawingLogic: drawingLogic.pentagon
     }
 } as const;
 
 export const SHAPE_TYPES = Object.keys(SHAPES_CONFIG) as ShapeType[];
+export const IMAGE_TYPES = Object.entries(SHAPES_CONFIG)
+    .filter(([_, config]) => config.isImage)
+    .map(([type]) => type) as ShapeType[];
 
 export const getShapeProps = (type: ShapeType): Omit<ShapeProps, 'type'> => {
     return SHAPES_CONFIG[type].defaultProps;
@@ -334,6 +385,17 @@ export const getShapeProps = (type: ShapeType): Omit<ShapeProps, 'type'> => {
 export const getShapeComponent = (type: ShapeType) => {
     return SHAPES_CONFIG[type].component;
 };
+
+export const getIsImage = (type: ShapeType) => {
+    return SHAPES_CONFIG[type].isImage;
+}
+
+export const getSize = (shape: Shape) => {
+    return {
+        width: SHAPES_CONFIG[shape.type].getWidth(shape),
+        height: SHAPES_CONFIG[shape.type].getHeight(shape)
+    };
+}
 
 export const getShapeKonvaComponent = (props: Shape) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -347,4 +409,18 @@ export const shapeValidationOnMiniPage = (shape: Shape, scale: number) => {
 
 export const getDrawingLogic = (type: ShapeType) => {
     return SHAPES_CONFIG[type].drawingLogic;
+};
+
+export const parseToolType = (tool: string): {
+    shapeType: ShapeType;
+    isImageShape: boolean;
+} => {
+    if (tool.startsWith('image_')) {
+        const baseType = tool.replace('image_', '') as ShapeType;
+        if (SHAPES_CONFIG[baseType]?.isImage) {
+            return { shapeType: baseType, isImageShape: true };
+        }
+    }
+
+    return { shapeType: tool as ShapeType, isImageShape: false };
 };

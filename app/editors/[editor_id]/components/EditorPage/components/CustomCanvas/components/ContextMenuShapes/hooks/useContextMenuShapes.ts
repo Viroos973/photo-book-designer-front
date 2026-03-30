@@ -8,7 +8,7 @@ import {
 import {Shape} from "@/utils/shapes/shapeTypes";
 import {Dispatch, RefObject, SetStateAction, useCallback, useMemo} from "react";
 
-export const useContextMenuShapes = (clipboardRef: RefObject<Shape | null>, shapes: Shape[], setShapes: Dispatch<SetStateAction<Shape[]>>, shapeId?: string | null) => {
+export const useContextMenuShapes = (clipboardRef: RefObject<Shape | null>, shapes: Shape[], setShapes: Dispatch<SetStateAction<Shape[]>>, setSelectedShapeIds: (selectedShapeIds: string[]) => void, shapeId?: string | null) => {
     const canBringForward = useMemo(() => {
         if (!shapeId) return;
 
@@ -52,6 +52,7 @@ export const useContextMenuShapes = (clipboardRef: RefObject<Shape | null>, shap
         if (!shapeId) return;
 
         setShapes(prev => prev.filter(shape => shape.id !== shapeId));
+        setSelectedShapeIds([])
     }, [setShapes, shapeId])
 
     const copyShape = useCallback(() => {

@@ -1,4 +1,4 @@
-import { Circle, Rect, Text, Line, Star, RegularPolygon } from 'react-konva';
+import { Circle, Rect, Line, Star, RegularPolygon } from 'react-konva';
 import {ComponentProps} from "react";
 
 export interface TransferProps {
@@ -24,11 +24,10 @@ export interface ContextMenuProps {
     shapeId?: string | null;
 }
 
-export type ShapeType = 'circle' | 'rect' | 'text' | 'line' | 'star' | 'triangle';
+export type ShapeType = 'circle' | 'rect' | 'line' | 'star' | 'triangle' | 'pentagon';
 
 export type CircleProps = ComponentProps<typeof Circle>;
 export type RectProps = ComponentProps<typeof Rect>;
-export type TextProps = ComponentProps<typeof Text>;
 export type LineProps = ComponentProps<typeof Line>;
 export type StarProps = ComponentProps<typeof Star>;
 export type TriangleProps = ComponentProps<typeof RegularPolygon>;
@@ -36,10 +35,10 @@ export type TriangleProps = ComponentProps<typeof RegularPolygon>;
 export type ShapeProps =
     | ({ type: 'circle' } & CircleProps)
     | ({ type: 'rect' } & RectProps)
-    | ({ type: 'text' } & TextProps)
     | ({ type: 'line' } & LineProps)
     | ({ type: 'star' } & StarProps)
-    | ({ type: 'triangle' } & TriangleProps);
+    | ({ type: 'triangle' } & TriangleProps)
+    | ({ type: 'pentagon' } & TriangleProps);
 
 export interface Shape {
     id: string;
@@ -51,7 +50,7 @@ export interface Shape {
 }
 
 export interface DrawingLogic {
-    createInitialShape: (startPos: { x: number; y: number }) => Shape;
+    createInitialShape: (startPos: { x: number; y: number }, isImageShape?: boolean) => Shape;
     updateShapeWhileDrawing: (
         shape: Shape,
         startPos: { x: number; y: number },

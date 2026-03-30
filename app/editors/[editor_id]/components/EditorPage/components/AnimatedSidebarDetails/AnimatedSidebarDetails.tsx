@@ -6,20 +6,21 @@ import {ArrowLeft} from 'lucide-react';
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {useAnimatedSidebarDetails} from "./hooks/useAnimatedSidebarDetails";
 import {ComponentProps} from "react";
-import {Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {Shape} from "@/utils/shapes/shapeTypes";
 import {Thumbnails} from "@/app/editors/[editor_id]/components/EditorPage/components/Thumbnails/Thumbnails";
 
 interface AnimatedSidebarDetailsProps extends ComponentProps<'div'> {
-    selectedTools: ShapeType | null,
-    setSelectedTools: (selectedTools: ShapeType | null) => void,
+    selectedTools: string | null,
+    setSelectedTools: (selectedTools: string | null) => void,
     width: number,
     height: number,
     pagesNum: number,
-    shapes: Shape[]
+    shapes: Shape[],
+    roomId: string
 }
 
-export function AnimatedSidebarDetails({selectedTools, setSelectedTools, width, height, pagesNum, shapes, children}: AnimatedSidebarDetailsProps) {
-    const {state, functions} = useAnimatedSidebarDetails(selectedTools, setSelectedTools)
+export function AnimatedSidebarDetails({selectedTools, setSelectedTools, width, height, pagesNum, shapes, roomId, children}: AnimatedSidebarDetailsProps) {
+    const {state, functions} = useAnimatedSidebarDetails(selectedTools, setSelectedTools, roomId)
 
     return (
         <div className="flex h-full w-full">
@@ -64,7 +65,7 @@ export function AnimatedSidebarDetails({selectedTools, setSelectedTools, width, 
                     {children}
                 </div>
             </div>
-            <Thumbnails width={width * 0.2} height={height * 0.2} pagesNum={pagesNum} shapes={shapes}/>
+            <Thumbnails width={width * 0.2} height={height * 0.2} pagesNum={pagesNum} shapes={shapes} roomId={roomId}/>
         </div>
     );
 }

@@ -1,18 +1,26 @@
 import { Shape, ShapeType, ShapeProps } from '@/utils/shapes/shapeTypes';
-import {getDrawingLogic, getShapeProps} from '@/utils/shapes/shapeConfig';
+import {
+    generateShapeProps,
+    getDrawingLogic,
+    getIsImage,
+    getShapeProps,
+    parseToolType
+} from '@/utils/shapes/shapeConfig';
 
-export const createShape = (type: ShapeType, x: number, y: number): Shape => ({
+export const createShape = (type: ShapeType, x: number, y: number, isImageShape: boolean): Shape => ({
     id: `${crypto.randomUUID()}`,
     type,
     x,
     y,
     isDragging: false,
-    props: getShapeProps(type)
+    props: getIsImage(type) ? generateShapeProps(getShapeProps(type), isImageShape) : getShapeProps(type)
 });
 
-export const createInitialDrawingShape = (type: ShapeType, startPos: { x: number; y: number }): Shape => {
-    const drawingLogic = getDrawingLogic(type);
-    return drawingLogic.createInitialShape(startPos);
+export const createInitialDrawingShape = (type: string, startPos: { x: number; y: number }): Shape => {
+    const { shapeType, isImageShape } = parseToolType(type);
+
+    const drawingLogic = getDrawingLogic(shapeType);
+    return drawingLogic.createInitialShape(startPos, isImageShape);
 };
 
 export const updateShapeWhileDrawing = (

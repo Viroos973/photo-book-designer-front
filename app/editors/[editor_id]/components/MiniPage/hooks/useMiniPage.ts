@@ -70,7 +70,12 @@ export const useMiniPage = (shapes: Shape[], scale: number, width: number, heigh
                             scaleY: scale,
                             strokeWidth: 0.5
                         }
-                    };
+                    } as Shape;
+
+                    if (!miniShape.props.fill) {
+                        miniShape.props.fill = '#A3A3A3'
+                        miniShape.props.dash = null
+                    }
 
                     const node = getShapeKonvaComponent(miniShape);
                     if (node) layer.add(node);

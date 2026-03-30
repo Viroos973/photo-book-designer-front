@@ -8,11 +8,11 @@ import {
     updateShapeProps,
     updateShapeWhileDrawing
 } from "@/utils/shapes/shapeUtils";
-import {getShapeComponent} from "@/utils/shapes/shapeConfig";
+import {getShapeComponent, getSize, parseToolType} from "@/utils/shapes/shapeConfig";
 import Konva from 'konva';
 import {Vector2d} from "konva/lib/types";
 
-export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React.Dispatch<React.SetStateAction<Shape[]>>) => {
+export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Dispatch<React.SetStateAction<Shape[]>>, shapes: Shape[], setSelectedTools: (selectedTools: string | null) => void) => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [tempShape, setTempShape] = useState<Shape | null>(null);
     const [selectedShapeIds, setSelectedShapeIds] = useState<string[]>([]);
@@ -23,7 +23,6 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
     const selectionRectRef = useRef<Konva.Rect | null>(null);
     const selectionStart = useRef<Vector2d | null>(null);
     const isSelecting = useRef(false);
-
 
     const [contextMenuState, setContextMenuState] = useState<ContextMenuProps>({
         visible: false,
@@ -109,8 +108,9 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
         );
 
         if (distance > minSizeShape) {
+            const {shapeType} = parseToolType(selectedTool)
             const updatedShape = updateShapeWhileDrawing(
-                selectedTool,
+                shapeType,
                 tempShape,
                 startPos.current,
                 currentPos
@@ -158,11 +158,13 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
             )
             : 0;
 
+        const {shapeType, isImageShape} = parseToolType(selectedTool)
         if (distance < minSizeShape) {
-            const defaultShape = createShape(selectedTool, startPos.current!.x, startPos.current!.y);
+            const defaultShape = createShape(shapeType, startPos.current!.x, startPos.current!.y, isImageShape);
             setShapes(prev => [...prev, defaultShape]);
+            setSelectedShapeIds([defaultShape.id])
         } else {
-            const shouldAdd = shouldFinalizeShape(selectedTool, tempShape);
+            const shouldAdd = shouldFinalizeShape(shapeType, tempShape);
             if (shouldAdd) {
                 const finalShape = {
                     ...tempShape,
@@ -172,9 +174,11 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
                     }
                 };
                 setShapes(prev => [...prev, finalShape]);
+                setSelectedShapeIds([finalShape.id])
             }
         }
 
+        setSelectedTools(null)
         setTempShape(null);
         startPos.current = null;
     };
@@ -304,7 +308,8 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (<ShapeComponent {...shapeProps as any} key={shape.id} onClick={(e) => handleClickOnShape(e, shape.id)}
+        return (<ShapeComponent {...shapeProps as any} key={shape.id}
+                                onClick={(e) => handleClickOnShape(e, shape.id)}
                                 onContextMenu={(e) => handleOpenContextMenuShape(e, shape.id)} />);
     };
 
@@ -349,7 +354,6 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
         );
     };
 
-
     useEffect(() => {
         if (!transformerRef.current || !stageRef.current) return;
 
@@ -361,6 +365,113 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
         transformerRef.current.getLayer()?.batchDraw();
     }, [selectedShapeIds]);
 
+    useEffect(() => {
+        const stage = stageRef.current;
+        if (!stage) return;
+
+        const container = stage.container();
+
+        let lastHighlightedTarget: Konva.Shape | null = null;
+
+        const handleDragOver = (e: DragEvent) => {
+            e.preventDefault();
+
+            stage.setPointersPositions(e);
+            const pos = stage.getPointerPosition();
+            if (!pos) return;
+
+            const target = stage.getIntersection(pos);
+
+            if (lastHighlightedTarget !== target) {
+                handleDragLeave()
+
+                if (target) {
+                    const targetId = target.attrs.id;
+                    const targetShape = shapes.find(s => s.id === targetId);
+
+                    if (targetShape && !targetShape.props.fill) {
+                        target.stroke("#3B82F6");
+                        target.strokeWidth(3);
+                        target.getLayer()?.batchDraw();
+                        lastHighlightedTarget = target;
+                    }
+                }
+            }
+        };
+
+        const handleDragLeave = () => {
+            if (lastHighlightedTarget) {
+                const prevShape = shapes.find(s => s.id === lastHighlightedTarget?.attrs.id);
+                lastHighlightedTarget.stroke(prevShape?.props.stroke || "black");
+                lastHighlightedTarget.strokeWidth(prevShape?.props.strokeWidth || 2);
+                lastHighlightedTarget.getLayer()?.batchDraw();
+                lastHighlightedTarget = null;
+            }
+        };
+
+        const handleDrop = (e: DragEvent) => {
+            e.preventDefault();
+            handleDragLeave()
+
+            stage.setPointersPositions(e);
+            const pos = stage.getPointerPosition();
+            if (!pos) return;
+
+            const target = stage.getIntersection(pos);
+            if (!target) return;
+
+            const targetId = target.attrs.id;
+            const targetShape = shapes.find(s => s.id === targetId);
+
+            if (targetShape && !targetShape.props.fill) {
+                const imageUrl = e.dataTransfer?.getData('text/plain');
+                if (imageUrl) {
+                    const img = new window.Image();
+                    img.crossOrigin = 'Anonymous';
+
+                    img.onload = () => {
+                        const {width: shapeWidth, height: shapeHeight} = getSize(targetShape)
+
+                        const scaleX = shapeWidth / img.width;
+                        const scaleY = shapeHeight / img.height;
+                        const scale = Math.max(scaleX, scaleY);
+
+                        const scaledWidth = img.width * scale;
+                        const scaledHeight = img.height * scale;
+                        let offsetX = (scaledWidth - shapeWidth) / 2 / scale;
+                        let offsetY = (scaledHeight - shapeHeight) / 2 / scale;
+
+                        if (targetShape.type != 'rect') {
+                            offsetX += (shapeWidth / scale / 2);
+                            offsetY += (shapeHeight / scale / 2);
+                        }
+
+                        target.fillPatternImage(img);
+                        target.fillPatternScaleX(scale);
+                        target.fillPatternScaleY(scale);
+                        target.fillPatternOffsetX(offsetX);
+                        target.fillPatternOffsetY(offsetY);
+                        target.fillPatternRepeat('no-repeat');
+                        target.dash(null)
+
+                        target.getLayer()?.batchDraw();
+                    }
+
+                    img.src = imageUrl;
+                }
+            }
+        }
+
+        container.addEventListener('dragover', handleDragOver);
+        container.addEventListener('dragleave', handleDragLeave);
+        container.addEventListener('drop', handleDrop);
+
+        return () => {
+            container.removeEventListener('dragover', handleDragOver);
+            container.removeEventListener('dragleave', handleDragLeave);
+            container.removeEventListener('drop', handleDrop);
+        };
+    }, [shapes, stageRef.current])
 
     return {
         state: { isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef },
@@ -371,11 +482,11 @@ export const useCustomCanvas = (selectedTool: ShapeType | null, setShapes: React
             handleMouseMove,
             handleMouseUp,
             renderShape,
-            setShapes,
             handleCloseContextMenu,
             handleOpenContextMenuCanvas,
             handleCloseContextMenuCanvas,
-            handleTransformEnd
+            handleTransformEnd,
+            setSelectedShapeIds
         }
     }
 }

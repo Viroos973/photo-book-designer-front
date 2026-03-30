@@ -1,16 +1,15 @@
 import {useEffect, useState} from "react";
-import {useParams, useRouter, useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {useGetPageByRoomIdQuery} from "@/shared/api/hooks";
 import {Shape} from "@/utils/shapes/shapeTypes";
 
-export const useThumbnails = (width: number, height: number, scale: number, pagesNum: number) => {
+export const useThumbnails = (width: number, height: number, scale: number, pagesNum: number, roomId: string) => {
     const [currentPage, setCurrentPage] = useState(0);
-    const { editor_id } = useParams<{ editor_id: string }>();
     const searchParams = useSearchParams();
     const router = useRouter();
 
     const getPageByRoomId = useGetPageByRoomIdQuery({
-        roomId: editor_id
+        roomId: roomId
     })
 
     const miniWidth = width * scale;
@@ -23,21 +22,35 @@ export const useThumbnails = (width: number, height: number, scale: number, page
         return page?.shapes || [];
     };
 
-    useEffect(() => {
+    const setPage = (page: number) => {
+        setCurrentPage(page);
         const params = new URLSearchParams(searchParams.toString());
 
-        if (currentPage === 0) {
+        if (page === 0) {
             params.delete('page');
         } else {
-            params.set('page', currentPage.toString());
+            params.set('page', page.toString());
         }
 
-        const newUrl = `?${params.toString()}`;
-        router.replace(newUrl, { scroll: false });
-    }, [currentPage]);
+        router.replace(`?${params.toString()}`, { scroll: false });
+    };
+
+    useEffect(() => {
+        const pageParam = searchParams.get('page');
+        if (pageParam) {
+            const pageNumber = parseInt(pageParam, 10);
+            if (!isNaN(pageNumber) && pageNumber >= 0 && pageNumber < pagesNum) {
+                setCurrentPage(pageNumber);
+            } else {
+                setCurrentPage(0);
+            }
+        } else {
+            setCurrentPage(0);
+        }
+    }, [searchParams, pagesNum]);
 
     return {
         state: { miniWidth, miniHeight, currentPage, getPageByRoomId, pages },
-        functions: { setCurrentPage, getShapesForPage }
+        functions: { getShapesForPage, setPage }
     }
 }

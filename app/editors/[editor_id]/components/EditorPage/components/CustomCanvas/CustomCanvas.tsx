@@ -1,4 +1,4 @@
-import {Shape, ShapeType} from "@/utils/shapes/shapeTypes";
+import {Shape} from "@/utils/shapes/shapeTypes";
 import {useCustomCanvas} from "./hooks/useCustomCanvas";
 import {Layer, Stage, Rect, Transformer} from "react-konva";
 import ContextMenuShapes from "./components/ContextMenuShapes/ContextMenuShapes";
@@ -8,16 +8,17 @@ import React from "react";
 interface CustomCanvasProps {
     width: number,
     height: number,
-    selectedTools: ShapeType | null,
+    selectedTools: string | null,
     shapes: Shape[],
-    setShapes: React.Dispatch<React.SetStateAction<Shape[]>>
+    setShapes: React.Dispatch<React.SetStateAction<Shape[]>>,
+    setSelectedTools: (selectedTools: string | null) => void
 }
 
-export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes}: CustomCanvasProps) => {
+export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes, setSelectedTools}: CustomCanvasProps) => {
     const {state,
         selectionRectRef,
         transformerRef,
-        functions} = useCustomCanvas(selectedTools, setShapes)
+        functions} = useCustomCanvas(selectedTools, setShapes, shapes, setSelectedTools)
 
     return (
         <>
@@ -54,10 +55,10 @@ export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes}: 
                     />
                 </Layer>
             </Stage>
-            <ContextMenuCanvas contextMenuState={state.contextMenuCanvasState} clipboardRef={state.clipboardRef}
-                               setShapes={functions.setShapes} onClose={functions.handleCloseContextMenuCanvas} />
-            <ContextMenuShapes contextMenuState={state.contextMenuState} clipboardRef={state.clipboardRef}
-                               shapes={shapes} setShapes={functions.setShapes} onClose={functions.handleCloseContextMenu}/>
+            <ContextMenuCanvas contextMenuState={state.contextMenuCanvasState} clipboardRef={state.clipboardRef} setSelectedShapeIds={functions.setSelectedShapeIds}
+                               shapes={shapes} setShapes={setShapes} onClose={functions.handleCloseContextMenuCanvas} />
+            <ContextMenuShapes contextMenuState={state.contextMenuState} clipboardRef={state.clipboardRef} setSelectedShapeIds={functions.setSelectedShapeIds}
+                               shapes={shapes} setShapes={setShapes} onClose={functions.handleCloseContextMenu}/>
         </>
     )
 }

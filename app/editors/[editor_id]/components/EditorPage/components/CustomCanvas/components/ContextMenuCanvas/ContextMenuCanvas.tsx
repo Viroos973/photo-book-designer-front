@@ -8,19 +8,19 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {ClipboardCopy, Scan, Trash2} from "lucide-react";
-import {
-    useContextMenuCanvas
-} from "@/app/editors/[editor_id]/components/EditorPage/components/CustomCanvas/components/ContextMenuCanvas/hooks/useContextMenuCanvas";
+import {useContextMenuCanvas} from "./hooks/useContextMenuCanvas";
 
 interface ContextMenuCanvasProps {
-    contextMenuState: ContextMenuProps;
-    clipboardRef: RefObject<Shape | null>;
-    setShapes: Dispatch<SetStateAction<Shape[]>>
-    onClose: () => void
+    contextMenuState: ContextMenuProps,
+    clipboardRef: RefObject<Shape | null>,
+    setShapes: Dispatch<SetStateAction<Shape[]>>,
+    shapes: Shape[],
+    onClose: () => void,
+    setSelectedShapeIds: (selectedShapeIds: string[]) => void
 }
 
-const ContextMenuCanvas = ({contextMenuState, clipboardRef, setShapes, onClose}: ContextMenuCanvasProps) => {
-    const { functions } = useContextMenuCanvas(contextMenuState, clipboardRef, setShapes)
+const ContextMenuCanvas = ({contextMenuState, clipboardRef, setShapes, onClose, setSelectedShapeIds, shapes}: ContextMenuCanvasProps) => {
+    const { functions } = useContextMenuCanvas(contextMenuState, clipboardRef, setShapes, setSelectedShapeIds, shapes)
 
     return (
         <DropdownMenu open={contextMenuState.visible} onOpenChange={(open) => !open && onClose()}>

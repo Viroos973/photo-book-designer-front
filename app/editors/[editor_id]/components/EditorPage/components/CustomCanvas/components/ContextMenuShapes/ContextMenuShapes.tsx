@@ -12,15 +12,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface ContextMenuShapesProps {
-    contextMenuState: ContextMenuProps;
-    clipboardRef: RefObject<Shape | null>;
-    shapes: Shape[];
-    setShapes: Dispatch<SetStateAction<Shape[]>>
-    onClose: () => void
+    contextMenuState: ContextMenuProps,
+    clipboardRef: RefObject<Shape | null>,
+    shapes: Shape[],
+    setShapes: Dispatch<SetStateAction<Shape[]>>,
+    onClose: () => void,
+    setSelectedShapeIds: (selectedShapeIds: string[]) => void
 }
 
-const ContextMenuShapes = ({ contextMenuState, clipboardRef, shapes, setShapes, onClose }: ContextMenuShapesProps) => {
-    const { state, functions } = useContextMenuShapes(clipboardRef, shapes, setShapes, contextMenuState.shapeId);
+const ContextMenuShapes = ({ contextMenuState, clipboardRef, shapes, setShapes, onClose, setSelectedShapeIds }: ContextMenuShapesProps) => {
+    const { state, functions } = useContextMenuShapes(clipboardRef, shapes, setShapes, setSelectedShapeIds, contextMenuState.shapeId);
 
     return (
         <DropdownMenu open={contextMenuState.visible} onOpenChange={(open) => !open && onClose()}>

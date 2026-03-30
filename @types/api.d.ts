@@ -29,3 +29,21 @@ interface PageResponse {
     pageNumber: number;
     shapes: Shape[];
 }
+
+interface RoomPhotoDTO {
+    imageId: string;
+    imageUrl: string;
+    roomId: string;
+}
+
+interface Pagination {
+    totalCount: number,
+    page: number,
+    totalPages: number,
+    pageSize: number
+}
+
+interface RoomPhotos {
+    roomPhotos: RoomPhotoDTO[];
+    pagination: Pagination;
+}
