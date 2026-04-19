@@ -2,9 +2,11 @@ import {useState} from "react";
 import {Users, Shapes, Images, BookImage, LayoutTemplate, Type} from "lucide-react";
 import {ShapesSection} from "../components/ShapesSection/ShapesSection";
 import {PhotoSection} from "../components/PhotoSection/PhotoSection";
+import {resizeToFit} from "@/utils/helpers/resizeToFit";
 
-export const useAnimatedSidebarDetails = (selectedTools: string | null, setSelectedTools: (selectedTools: string | null) => void, roomId: string) => {
+export const useAnimatedSidebarDetails = (selectedTools: string | null, setSelectedTools: (selectedTools: string | null) => void, roomId: string, width: number, height: number) => {
     const [activeItem, setActiveItem] = useState<string | null>('shapes');
+    const {width: newWidth, height: newHeight} = resizeToFit(width, height, 700)
 
     const navigation = [
         { id: 'users', icon: Users },
@@ -39,7 +41,7 @@ export const useAnimatedSidebarDetails = (selectedTools: string | null, setSelec
     };
 
     return {
-        state: { detailContent, navigation, activeItem },
+        state: { detailContent, navigation, activeItem, newWidth, newHeight },
         functions: { setActiveItem }
     }
 }

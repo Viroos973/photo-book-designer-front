@@ -18,13 +18,13 @@ export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes, s
     const {state,
         selectionRectRef,
         transformerRef,
-        functions} = useCustomCanvas(selectedTools, setShapes, shapes, setSelectedTools)
+        functions} = useCustomCanvas(selectedTools, setShapes, shapes, setSelectedTools, width, height)
 
     return (
         <>
             <Stage
-                width={width * 0.2}
-                height={height * 0.2}
+                width={state.newWidth}
+                height={state.newHeight}
                 onMouseDown={functions.handleMouseDown}
                 onMouseMove={functions.handleMouseMove}
                 onMouseUp={functions.handleMouseUp}

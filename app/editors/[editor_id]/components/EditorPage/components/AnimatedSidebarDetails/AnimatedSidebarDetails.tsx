@@ -20,7 +20,7 @@ interface AnimatedSidebarDetailsProps extends ComponentProps<'div'> {
 }
 
 export function AnimatedSidebarDetails({selectedTools, setSelectedTools, width, height, pagesNum, shapes, roomId, children}: AnimatedSidebarDetailsProps) {
-    const {state, functions} = useAnimatedSidebarDetails(selectedTools, setSelectedTools, roomId)
+    const {state, functions} = useAnimatedSidebarDetails(selectedTools, setSelectedTools, roomId, width, height)
 
     return (
         <div className="flex h-full w-full">
@@ -65,7 +65,7 @@ export function AnimatedSidebarDetails({selectedTools, setSelectedTools, width, 
                     {children}
                 </div>
             </div>
-            <Thumbnails width={width * 0.2} height={height * 0.2} pagesNum={pagesNum} shapes={shapes} roomId={roomId}/>
+            <Thumbnails width={state.newWidth} height={state.newHeight} pagesNum={pagesNum} shapes={shapes} roomId={roomId} />
         </div>
     );
 }

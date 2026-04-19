@@ -1,19 +1,19 @@
 import {useEffect, useState} from "react";
 import {useRouter, useSearchParams} from "next/navigation";
-import {useGetPageByRoomIdQuery} from "@/shared/api/hooks";
+import {useGetPageByRoomIdQuery, usePostCreatePageMutation} from "@/shared/api/hooks";
 import {Shape} from "@/utils/shapes/shapeTypes";
+import {resizeToFit} from "@/utils/helpers/resizeToFit";
 
-export const useThumbnails = (width: number, height: number, scale: number, pagesNum: number, roomId: string) => {
+export const useThumbnails = (pagesNum: number, roomId: string, width: number, height: number, shapes: Shape[]) => {
     const [currentPage, setCurrentPage] = useState(0);
     const searchParams = useSearchParams();
     const router = useRouter();
+    const {width: newWidth, height: newHeight, scale} = resizeToFit(width, height, 200)
 
+    const createPage = usePostCreatePageMutation()
     const getPageByRoomId = useGetPageByRoomIdQuery({
         roomId: roomId
     })
-
-    const miniWidth = width * scale;
-    const miniHeight = height * scale;
 
     const pages = Array.from({ length: pagesNum }, (_, index) => index);
 
@@ -22,8 +22,18 @@ export const useThumbnails = (width: number, height: number, scale: number, page
         return page?.shapes || [];
     };
 
-    const setPage = (page: number) => {
+    const setPage = async (page: number) => {
+        await createPage.mutateAsync({
+            params: {
+                pageNumber: currentPage,
+                roomId: roomId,
+                htmlContent: "<></>",
+                shapes: shapes
+            }
+        })
+
         setCurrentPage(page);
+
         const params = new URLSearchParams(searchParams.toString());
 
         if (page === 0) {
@@ -50,7 +60,7 @@ export const useThumbnails = (width: number, height: number, scale: number, page
     }, [searchParams, pagesNum]);
 
     return {
-        state: { miniWidth, miniHeight, currentPage, getPageByRoomId, pages },
+        state: { currentPage, getPageByRoomId, pages, newHeight, newWidth, scale },
         functions: { getShapesForPage, setPage }
     }
 }

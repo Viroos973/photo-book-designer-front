@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {ContextMenuProps, minSizeShape, Shape, ShapeType, TransferProps} from "@/utils/shapes/shapeTypes";
+import {ContextMenuProps, minSizeShape, Shape, TransferProps} from "@/utils/shapes/shapeTypes";
 import {
     createInitialDrawingShape,
     createShape,
@@ -11,8 +11,9 @@ import {
 import {getShapeComponent, getSize, parseToolType} from "@/utils/shapes/shapeConfig";
 import Konva from 'konva';
 import {Vector2d} from "konva/lib/types";
+import {resizeToFit} from "@/utils/helpers/resizeToFit";
 
-export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Dispatch<React.SetStateAction<Shape[]>>, shapes: Shape[], setSelectedTools: (selectedTools: string | null) => void) => {
+export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Dispatch<React.SetStateAction<Shape[]>>, shapes: Shape[], setSelectedTools: (selectedTools: string | null) => void, width: number, height: number) => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [tempShape, setTempShape] = useState<Shape | null>(null);
     const [selectedShapeIds, setSelectedShapeIds] = useState<string[]>([]);
@@ -23,6 +24,7 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
     const selectionRectRef = useRef<Konva.Rect | null>(null);
     const selectionStart = useRef<Vector2d | null>(null);
     const isSelecting = useRef(false);
+    const {width: newWidth, height: newHeight} = resizeToFit(width, height, 700)
 
     const [contextMenuState, setContextMenuState] = useState<ContextMenuProps>({
         visible: false,
@@ -471,10 +473,10 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
             container.removeEventListener('dragleave', handleDragLeave);
             container.removeEventListener('drop', handleDrop);
         };
-    }, [shapes, stageRef.current])
+    }, [shapes])
 
     return {
-        state: { isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef },
+        state: { isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef, newWidth, newHeight },
         selectionRectRef,
         transformerRef,
         functions: {

@@ -5,14 +5,15 @@ import {Input} from "@/components/ui/input";
 import {SearchIcon} from "lucide-react";
 import {useHome} from "@/app/(hooks)/useHome";
 import {CreateOrConnectProject} from "@/app/(components)/CreateOrConnectProject/CreateOrConnectProject";
+import {RoomItem} from "@/app/(components)/RoomItem/RoomItem";
 
 export default function Home() {
   const {state, functions} = useHome()
 
   return (
-    <div className='mx-auto mt-4 flex max-w-[1200px] flex-col gap-10'>
+    <div className='mx-auto mt-4 flex max-w-[1225px] flex-col gap-10'>
       <div className="mx-12">
-        <div className='flex items-center justify-between mx-12'>
+        <div className='flex items-center justify-between'>
           <p className='text-2xl font-bold'>{"Мои проекты"}</p>
           <div className='flex items-center gap-2'>
             <Input
@@ -30,7 +31,11 @@ export default function Home() {
                                     router={state.router}/>
           </div>
         </div>
-
+        <div className="flex items-center gap-8 flex-wrap my-8">
+          {state.getRooms.data?.data.map(room => (
+              <RoomItem key={room.id} room={room} />
+          ))}
+        </div>
       </div>
     </div>
   );
