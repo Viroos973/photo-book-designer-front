@@ -18,7 +18,7 @@ export const Thumbnails = ({width, height, pagesNum, shapes, roomId}: Thumbnails
             {state.pages.map((pageNumber) => (
                 <MiniPage key={pageNumber} width={state.newWidth} height={state.newHeight} scale={state.scale}
                           pageNumber={pageNumber} isActive={state.currentPage == pageNumber}
-                          becomeActive={() => functions.setPage(pageNumber)}
+                          becomeActive={() => functions.setPage(pageNumber)} isLast={pageNumber === pagesNum + 1}
                           shapes={state.currentPage == pageNumber ? shapes : functions.getShapesForPage(pageNumber)} />
             ))}
         </div>

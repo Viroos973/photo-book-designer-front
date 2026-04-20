@@ -15,10 +15,14 @@ export const useThumbnails = (pagesNum: number, roomId: string, width: number, h
         roomId: roomId
     })
 
-    const pages = Array.from({ length: pagesNum }, (_, index) => index);
+    const pages = Array.from({ length: pagesNum + 2 }, (_, index) => index);
 
-    const getShapesForPage = (pageNumber: number): Shape[] => {
-        const page = getPageByRoomId.data?.data.find(p => p.pageNumber === pageNumber);
+    const getShapesForPage = (pageNumber: number): Shape[] | null => {
+        if (!getPageByRoomId.data?.data) {
+            return null;
+        }
+
+        const page = getPageByRoomId.data.data.find(p => p.pageNumber === pageNumber);
         return page?.shapes || [];
     };
 

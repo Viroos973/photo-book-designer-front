@@ -290,14 +290,14 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
         const ShapeComponent = getShapeComponent(shape.type);
 
         const shapeProps = {
+            ...shape.props,
             id: shape.id,
             x: shape.x,
             y: shape.y,
             name: 'selectable',
             draggable: true,
             onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => handleDragStart(shape.id, e),
-            onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(shape.id, e),
-            ...shape.props
+            onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(shape.id, e)
         };
 
         if (transformerRef.current) {

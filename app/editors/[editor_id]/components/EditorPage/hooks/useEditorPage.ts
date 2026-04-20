@@ -13,7 +13,7 @@ export const useEditorPage = () => {
     const [shapes, setShapes] = useState<Shape[]>([]);
 
     const pageParam = searchParams.get('page');
-    const pageNumber = pageParam ? parseInt(pageParam, 10) : 1;
+    const pageNumber = pageParam ? parseInt(pageParam, 10) : 0;
 
     const getRoomById = useGetRoomByIdQuery({
         roomId: editor_id
