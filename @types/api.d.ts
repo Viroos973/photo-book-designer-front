@@ -30,6 +30,11 @@ interface PageResponse {
     shapes: Shape[];
 }
 
+interface SpreadDTO {
+    pageOne: PageResponse | null;
+    pageTwo: PageResponse | null;
+}
+
 interface RoomPhotoDTO {
     imageId: string;
     imageUrl: string;

@@ -27,14 +27,22 @@ export const useThumbnails = (pagesNum: number, roomId: string, width: number, h
     };
 
     const setPage = async (page: number) => {
+        const shapesForSave = shapes.map(shape => ({
+            ...shape,
+            props: {
+                ...shape.props,
+                fillPatternImage: null
+            }
+        }));
+
         await createPage.mutateAsync({
             params: {
                 pageNumber: currentPage,
-                roomId: roomId,
+                roomId,
                 htmlContent: "<></>",
-                shapes: shapes
+                shapes: shapesForSave
             }
-        })
+        });
 
         setCurrentPage(page);
 
@@ -53,7 +61,7 @@ export const useThumbnails = (pagesNum: number, roomId: string, width: number, h
         const pageParam = searchParams.get('page');
         if (pageParam) {
             const pageNumber = parseInt(pageParam, 10);
-            if (!isNaN(pageNumber) && pageNumber >= 0 && pageNumber < pagesNum) {
+            if (!isNaN(pageNumber) && pageNumber >= 0 && pageNumber <= pagesNum + 1) {
                 setCurrentPage(pageNumber);
             } else {
                 setCurrentPage(0);

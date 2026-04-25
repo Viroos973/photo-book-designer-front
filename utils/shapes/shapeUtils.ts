@@ -3,9 +3,10 @@ import {
     generateShapeProps,
     getDrawingLogic,
     getIsImage,
-    getShapeProps,
+    getShapeProps, getSize,
     parseToolType
 } from '@/utils/shapes/shapeConfig';
+import React from "react";
 
 export const createShape = (type: ShapeType, x: number, y: number, isImageShape: boolean): Shape => ({
     id: `${crypto.randomUUID()}`,
@@ -100,3 +101,49 @@ export const getShapeZIndex = (shapes: Shape[], shapeId: string): number => {
 export const getMaxZIndex = (shapes: Shape[]): number => {
     return shapes.length - 1;
 };
+
+export const loadImage = (shape: Shape, imageUrl: string, setShapes: React.Dispatch<React.SetStateAction<Shape[]>>) => {
+    const img = new window.Image();
+    img.crossOrigin = 'Anonymous';
+
+    img.onload = () => {
+        const {width: shapeWidth, height: shapeHeight} = getSize(shape)
+
+        const scaleX = shapeWidth / img.width;
+        const scaleY = shapeHeight / img.height;
+        const scale = Math.max(scaleX, scaleY);
+
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        let offsetX = (scaledWidth - shapeWidth) / 2 / scale;
+        let offsetY = (scaledHeight - shapeHeight) / 2 / scale;
+
+        if (shape.type != 'rect') {
+            offsetX += (shapeWidth / scale / 2);
+            offsetY += (shapeHeight / scale / 2);
+        }
+
+        setShapes(prev =>
+            prev.map(s =>
+                s.id === shape.id
+                    ? {...s,
+                        imageURL: imageUrl,
+                        props: {
+                            ...s.props,
+                            fill: null,
+                            fillPatternImage: img,
+                            fillPatternScaleX: scale,
+                            fillPatternScaleY: scale,
+                            fillPatternOffsetX: offsetX,
+                            fillPatternOffsetY: offsetY,
+                            fillPatternRepeat: 'no-repeat',
+                            dash: null
+                        }
+                    }
+                    : s
+            )
+        );
+    }
+
+    img.src = imageUrl;
+}

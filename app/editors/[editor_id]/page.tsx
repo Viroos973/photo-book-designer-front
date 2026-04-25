@@ -4,6 +4,7 @@ import {useEditorPhotoBook} from "@/app/editors/[editor_id]/hooks/useEditorPhoto
 import {PROJECT_TYPES} from "@/utils/constants/projectTypes";
 import {EditorPage} from "@/app/editors/[editor_id]/components/EditorPage/EditorPage";
 import {MovingPage} from "@/app/editors/[editor_id]/components/MovingPage/MovingPage";
+import {ResultPage} from "@/app/editors/[editor_id]/components/ResultPage/ResultPage";
 
 const EditorPhotoBook = () => {
     const { state } = useEditorPhotoBook()
@@ -11,7 +12,7 @@ const EditorPhotoBook = () => {
     return state.projectType === PROJECT_TYPES.MOVING_PAGES ? (
         <MovingPage />
     ) : state.projectType === PROJECT_TYPES.RESULT ? (
-        <p className='text-2xl font-bold'>{"Ресультат"}</p>
+        <ResultPage />
     ) : (
         <EditorPage />
     )

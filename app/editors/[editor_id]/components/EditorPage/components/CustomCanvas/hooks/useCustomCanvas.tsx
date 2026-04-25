@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {ContextMenuProps, minSizeShape, Shape, TransferProps} from "@/utils/shapes/shapeTypes";
 import {
     createInitialDrawingShape,
-    createShape,
+    createShape, loadImage,
     shouldFinalizeShape,
     updateShapePosition,
     updateShapeProps,
@@ -297,7 +297,9 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
             name: 'selectable',
             draggable: true,
             onDragStart: (e: Konva.KonvaEventObject<DragEvent>) => handleDragStart(shape.id, e),
-            onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(shape.id, e)
+            onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(shape.id, e),
+            onContextMenu: (e: Konva.KonvaEventObject<MouseEvent>) => handleOpenContextMenuShape(e, shape.id),
+            onClick: (e: Konva.KonvaEventObject<MouseEvent>) => handleClickOnShape(e, shape.id)
         };
 
         if (transformerRef.current) {
@@ -310,9 +312,7 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (<ShapeComponent {...shapeProps as any} key={shape.id}
-                                onClick={(e) => handleClickOnShape(e, shape.id)}
-                                onContextMenu={(e) => handleOpenContextMenuShape(e, shape.id)} />);
+        return (<ShapeComponent {...shapeProps as any} key={shape.id}/>);
     };
 
     const handleTransformEnd = () => {
@@ -428,38 +428,7 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
             if (targetShape && !targetShape.props.fill) {
                 const imageUrl = e.dataTransfer?.getData('text/plain');
                 if (imageUrl) {
-                    const img = new window.Image();
-                    img.crossOrigin = 'Anonymous';
-
-                    img.onload = () => {
-                        const {width: shapeWidth, height: shapeHeight} = getSize(targetShape)
-
-                        const scaleX = shapeWidth / img.width;
-                        const scaleY = shapeHeight / img.height;
-                        const scale = Math.max(scaleX, scaleY);
-
-                        const scaledWidth = img.width * scale;
-                        const scaledHeight = img.height * scale;
-                        let offsetX = (scaledWidth - shapeWidth) / 2 / scale;
-                        let offsetY = (scaledHeight - shapeHeight) / 2 / scale;
-
-                        if (targetShape.type != 'rect') {
-                            offsetX += (shapeWidth / scale / 2);
-                            offsetY += (shapeHeight / scale / 2);
-                        }
-
-                        target.fillPatternImage(img);
-                        target.fillPatternScaleX(scale);
-                        target.fillPatternScaleY(scale);
-                        target.fillPatternOffsetX(offsetX);
-                        target.fillPatternOffsetY(offsetY);
-                        target.fillPatternRepeat('no-repeat');
-                        target.dash(null)
-
-                        target.getLayer()?.batchDraw();
-                    }
-
-                    img.src = imageUrl;
+                    loadImage(targetShape, imageUrl, setShapes);
                 }
             }
         }
@@ -474,6 +443,18 @@ export const useCustomCanvas = (selectedTool: string | null, setShapes: React.Di
             container.removeEventListener('drop', handleDrop);
         };
     }, [shapes])
+
+    useEffect(() => {
+        if (shapes.length === 0) return;
+
+        const shapesToLoad = shapes.filter(shape => shape.imageURL);
+
+        shapesToLoad.forEach(shape => {
+            if (shape.imageURL && !shape.props?.fillPatternImage) {
+                loadImage(shape, shape.imageURL, setShapes);
+            }
+        });
+    }, [shapes]);
 
     return {
         state: { isDrawing, tempShape, contextMenuState, contextMenuCanvasState, clipboardRef, newWidth, newHeight },

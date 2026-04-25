@@ -11,20 +11,22 @@ interface CustomCanvasProps {
     selectedTools: string | null,
     shapes: Shape[],
     setShapes: React.Dispatch<React.SetStateAction<Shape[]>>,
-    setSelectedTools: (selectedTools: string | null) => void
+    setSelectedTools: (selectedTools: string | null) => void,
+    isReadOnly?: boolean
+    isOriginalSize?: boolean
 }
 
-export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes, setSelectedTools}: CustomCanvasProps) => {
+export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes, setSelectedTools, isReadOnly = false, isOriginalSize = false}: CustomCanvasProps) => {
     const {state,
         selectionRectRef,
         transformerRef,
         functions} = useCustomCanvas(selectedTools, setShapes, shapes, setSelectedTools, width, height)
 
     return (
-        <>
+        <div className={isReadOnly ? "pointer-events-none" : ""}>
             <Stage
-                width={state.newWidth}
-                height={state.newHeight}
+                width={isOriginalSize ? width : state.newWidth}
+                height={isOriginalSize ? height : state.newHeight}
                 onMouseDown={functions.handleMouseDown}
                 onMouseMove={functions.handleMouseMove}
                 onMouseUp={functions.handleMouseUp}
@@ -59,6 +61,6 @@ export const CustomCanvas = ({width, height, selectedTools, shapes, setShapes, s
                                shapes={shapes} setShapes={setShapes} onClose={functions.handleCloseContextMenuCanvas} />
             <ContextMenuShapes contextMenuState={state.contextMenuState} clipboardRef={state.clipboardRef} setSelectedShapeIds={functions.setSelectedShapeIds}
                                shapes={shapes} setShapes={setShapes} onClose={functions.handleCloseContextMenu}/>
-        </>
+        </div>
     )
 }
