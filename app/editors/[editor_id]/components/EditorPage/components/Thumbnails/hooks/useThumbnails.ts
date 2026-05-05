@@ -3,6 +3,7 @@ import {useRouter, useSearchParams} from "next/navigation";
 import {useGetPageByRoomIdQuery, usePostCreatePageMutation} from "@/shared/api/hooks";
 import {Shape} from "@/utils/shapes/shapeTypes";
 import {resizeToFit} from "@/utils/helpers/resizeToFit";
+import {renderScene} from "@/utils/shapes/shapeUtils";
 
 export const useThumbnails = (pagesNum: number, roomId: string, width: number, height: number, shapes: Shape[]) => {
     const [currentPage, setCurrentPage] = useState(0);
@@ -35,6 +36,8 @@ export const useThumbnails = (pagesNum: number, roomId: string, width: number, h
             }
         }));
 
+        const htmlContent = await renderScene(shapes, width, height);
+        console.log(htmlContent);
         await createPage.mutateAsync({
             params: {
                 pageNumber: currentPage,

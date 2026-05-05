@@ -1,4 +1,5 @@
 import {
+    AssetMap,
     CircleProps,
     DrawingLogic,
     LineProps,
@@ -36,6 +37,83 @@ export const generateShapeProps = (
         ...baseProps,
         fill: "#45B7D1",
     };
+};
+
+const getStarPoints = (shape: Shape) => {
+    const { props } = shape;
+
+    const points = [];
+    const step = Math.PI / props.numPoints;
+
+    const rotation = -Math.PI / 2;
+
+    for (let i = 0; i < 2 * props.numPoints; i++) {
+        const r = i % 2 === 0 ? props.outerRadius : props.innerRadius;
+        const angle = i * step + rotation;
+
+        points.push(`${Math.cos(angle) * r},${Math.sin(angle) * r}`);
+    }
+
+    return points;
+}
+
+const getPoligonPoints = (shape: Shape) => {
+    const { props } = shape;
+
+    const points = [];
+    const rotation = -Math.PI / 2;
+
+    for (let i = 0; i < props.sides; i++) {
+        const angle = (i / props.sides) * 2 * Math.PI + rotation;
+
+        points.push(
+            `${Math.cos(angle) * props.radius},${Math.sin(angle) * props.radius}`
+        );
+    }
+
+    return points;
+};
+
+const polygonToClipPath = (shape: Shape) => {
+    const points = getPoligonPoints(shape)
+
+    return `
+        <clipPath id="clip-${shape.id}">
+          <polygon points="${points.join(' ')}" />
+        </clipPath>`;
+}
+
+const polygonToHtml = (shape: Shape, assets: AssetMap) => {
+    const { props } = shape;
+    const url = props.fillPatternImage?.src;
+    const asset = url ? assets.get(url) : null;
+    const fill = asset || (props.fill || 'none');
+    const points = getPoligonPoints(shape)
+
+    return `
+        <g transform="translate(${shape.x}, ${shape.y}) rotate(${props.rotation || 0})">
+        ${url
+            ? `
+              <g clip-path="url(#clip-${shape.id})">
+                <image
+                  href="${fill}"
+                  x="${-(shape.props.fillPatternOffsetX || 0)}"
+                  y="${-(shape.props.fillPatternOffsetY || 0)}"
+                  transform="scale(${shape.props.fillPatternScaleX || 1})"
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              </g>
+            `
+            : ''
+        }
+          <polygon 
+            points="${points.join(' ')}"
+            stroke="${props.stroke}" 
+            stroke-width="${props.strokeWidth}" 
+            fill="${url ? "none" : fill}"
+            opacity="${props.opacity ?? 1}"
+          />
+        </g>`;
 };
 
 const drawingLogic: Record<ShapeType, DrawingLogic> = {
@@ -271,6 +349,44 @@ export const SHAPES_CONFIG = {
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
         getWidth: (shape: Shape) => shape.props.radius * 2,
         getHeight: (shape: Shape) => shape.props.radius * 2,
+        getClipPath: (shape: Shape) => (`
+          <clipPath id="clip-${shape.id}">
+            <circle r="${shape.props.radius}" />
+          </clipPath>
+        `),
+        toHtml: (shape: Shape, assets: AssetMap) => {
+            const { props } = shape;
+            const url = props.fillPatternImage?.src;
+            const asset = url ? assets.get(url) : null;
+            const fill = asset || (props.fill || 'none');
+
+            return `
+                <g transform="translate(${shape.x}, ${shape.y}) rotate(${props.rotation || 0})">
+                ${url
+                    ? `
+                      <g clip-path="url(#clip-${shape.id})">
+                        <image
+                          href="${fill}"
+                          x="${-(shape.props.fillPatternOffsetX || 0)}"
+                          y="${-(shape.props.fillPatternOffsetY || 0)}"
+                          transform="scale(${shape.props.fillPatternScaleX || 1})"
+                          preserveAspectRatio="xMidYMid slice"
+                        />
+                      </g>
+                    `
+                    : ''
+                }
+                  <circle 
+                    cx="${0}" 
+                    cy="${0}" 
+                    r="${props.radius}" 
+                    stroke="${props.stroke}" 
+                    stroke-width="${props.strokeWidth}" 
+                    fill="${url ? "none" : fill}"
+                    opacity="${props.opacity ?? 1}"
+                  />
+                </g>`;
+        },
         isImage: true,
         defaultProps: {
             radius: 30,
@@ -287,6 +403,44 @@ export const SHAPES_CONFIG = {
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.width * scale <= 4 && shape.props.height * scale <= 4,
         getWidth: (shape: Shape) => shape.props.width,
         getHeight: (shape: Shape) => shape.props.height,
+        getClipPath: (shape: Shape) => (`
+          <clipPath id="clip-${shape.id}">
+            <rect width="${shape.props.width}" height="${shape.props.height}" rx="${shape.props.cornerRadius || 0}" />
+          </clipPath>
+        `),
+        toHtml: (shape: Shape, assets: AssetMap) => {
+            const { props } = shape;
+            const url = props.fillPatternImage?.src;
+            const asset = url ? assets.get(url) : null;
+            const fill = asset || (props.fill || 'none');
+
+            return `
+                <g transform="translate(${shape.x}, ${shape.y}) rotate(${props.rotation || 0})">
+                ${url
+                    ? `
+                      <g clip-path="url(#clip-${shape.id})">
+                        <image
+                          href="${fill}"
+                          x="${-(shape.props.fillPatternOffsetX || 0)}"
+                          y="${-(shape.props.fillPatternOffsetY || 0)}"
+                          transform="scale(${shape.props.fillPatternScaleX || 1})"
+                          preserveAspectRatio="xMidYMid slice"
+                        />
+                      </g>
+                    `
+                    : ''
+                }
+                  <rect 
+                    width="${props.width}" 
+                    height="${props.height}" 
+                    rx="${props.cornerRadius || 0}"
+                    stroke="${props.stroke}" 
+                    stroke-width="${props.strokeWidth}" 
+                    fill="${url ? "none" : fill}"
+                    opacity="${props.opacity ?? 1}"
+                  />
+                </g>`;
+        },
         isImage: true,
         defaultProps: {
             width: 80,
@@ -307,6 +461,25 @@ export const SHAPES_CONFIG = {
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.strokeWidth * scale <= 1,
         getWidth: (shape: Shape) => Math.abs(shape.props.points[0].x - shape.props.points[1].x),
         getHeight: (shape: Shape) => Math.abs(shape.props.points[0].y - shape.props.points[1].y),
+        getClipPath: () => (``),
+        toHtml: (shape: Shape) => {
+            const { props } = shape;
+            const [x1, y1, x2, y2] = props.points;
+
+            return `
+                <g transform="translate(${shape.x}, ${shape.y}) rotate(${props.rotation || 0})">
+                  <line 
+                    x1="${x1}" 
+                    y1="${y1}" 
+                    x2="${x2}" 
+                    y2="${y2}" 
+                    stroke="${props.stroke}" 
+                    stroke-width="${props.strokeWidth}" 
+                    stroke-linecap="${props.lineCap}"
+                    opacity="${props.opacity ?? 1}"
+                  />
+                </g>`;
+        },
         isImage: false,
         defaultProps: {
             points: [-40, -40, 40, 40],
@@ -325,6 +498,47 @@ export const SHAPES_CONFIG = {
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.outerRadius * scale <= 2,
         getWidth: (shape: Shape) => shape.props.outerRadius * 2,
         getHeight: (shape: Shape) => shape.props.outerRadius * 2,
+        getClipPath: (shape: Shape) => {
+            const points = getStarPoints(shape);
+
+            return `
+              <clipPath id="clip-${shape.id}">
+                <polygon points="${points.join(' ')}" />
+              </clipPath>
+            `;
+        },
+        toHtml: (shape: Shape, assets: AssetMap) => {
+            const { props } = shape;
+            const url = props.fillPatternImage?.src;
+            const asset = url ? assets.get(url) : null;
+            const fill = asset || (props.fill || 'none');
+            const points = getStarPoints(shape)
+
+            return `
+                <g transform="translate(${shape.x}, ${shape.y}) rotate(${props.rotation || 0})">
+                ${url
+                    ? `
+                      <g clip-path="url(#clip-${shape.id})">
+                        <image
+                          href="${fill}"
+                          x="${-(shape.props.fillPatternOffsetX || 0)}"
+                          y="${-(shape.props.fillPatternOffsetY || 0)}"
+                          transform="scale(${shape.props.fillPatternScaleX || 1})"
+                          preserveAspectRatio="xMidYMid slice"
+                        />
+                      </g>
+                    `
+                    : ''
+                }
+                  <polygon 
+                    points="${points.join(' ')}"
+                    stroke="${props.stroke}" 
+                    stroke-width="${props.strokeWidth}" 
+                    fill="${url ? "none" : fill}"
+                    opacity="${props.opacity ?? 1}"
+                  />
+                </g>`;
+        },
         isImage: true,
         defaultProps: {
             numPoints: 5,
@@ -343,6 +557,8 @@ export const SHAPES_CONFIG = {
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
         getWidth: (shape: Shape) => shape.props.radius * 2,
         getHeight: (shape: Shape) => shape.props.radius * 2,
+        getClipPath: polygonToClipPath,
+        toHtml: polygonToHtml,
         isImage: true,
         defaultProps: {
             sides: 3,
@@ -360,6 +576,8 @@ export const SHAPES_CONFIG = {
         validationOnMiniPage: (shape: Shape, scale: number) => shape.props.radius * scale <= 2,
         getWidth: (shape: Shape) => shape.props.radius * 2,
         getHeight: (shape: Shape) => shape.props.radius * 2,
+        getClipPath: polygonToClipPath,
+        toHtml: polygonToHtml,
         isImage: true,
         defaultProps: {
             sides: 5,
@@ -409,6 +627,14 @@ export const shapeValidationOnMiniPage = (shape: Shape, scale: number) => {
 
 export const getDrawingLogic = (type: ShapeType) => {
     return SHAPES_CONFIG[type].drawingLogic;
+};
+
+export const shapeToClipPath = (shape: Shape) => {
+    return SHAPES_CONFIG[shape.type].getClipPath(shape);
+};
+
+export const shapeToHtml = (shape: Shape, assets: AssetMap) => {
+    return SHAPES_CONFIG[shape.type].toHtml(shape, assets);
 };
 
 export const parseToolType = (tool: string): {

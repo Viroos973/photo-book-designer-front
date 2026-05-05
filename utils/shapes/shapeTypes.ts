@@ -60,4 +60,5 @@ export interface DrawingLogic {
     shouldFinalizeShape: (shape: Shape) => boolean;
 }
 
-export const minSizeShape: number = 4
+export const minSizeShape: number = 4;
+export type AssetMap = Map<string, string>;
